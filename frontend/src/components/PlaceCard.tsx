@@ -26,17 +26,14 @@ export function PlaceCard({ place }: PlaceCardProps) {
           </div>
           <div
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full font-bold text-sm bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-200 border border-blue-300 dark:border-blue-700"
-            aria-label={`${t('places.accessibility_score')}: ${place.score} out of 100`}
+            aria-label={`${t('places.accessibility_score')}: ${place.accessibility_score} out of 100`}
           >
             <span aria-hidden="true">★</span>
-            <span>{place.score}/100</span>
+            <span>{place.accessibility_score}/100</span>
           </div>
         </div>
 
-        <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-2">
-          {place.description}
-        </p>
-        <p className="text-xs text-neutral-500 mt-1 font-mono">
+        <p className="text-xs text-neutral-500 mt-2 font-mono">
           📍 {place.address}
         </p>
 
@@ -44,24 +41,24 @@ export function PlaceCard({ place }: PlaceCardProps) {
           <span
             role="listitem"
             className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded border ${
-              place.ramp
+              place.has_ramp
                 ? 'bg-emerald-100 text-emerald-900 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-200'
                 : 'bg-neutral-100 text-neutral-500 border-neutral-200 line-through dark:bg-neutral-800'
             }`}
           >
-            <span>{place.ramp ? '✓' : '✗'}</span>
+            <span>{place.has_ramp ? '✓' : '✗'}</span>
             <span>{t('places.filter_ramp')}</span>
           </span>
 
           <span
             role="listitem"
             className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded border ${
-              place.elevator
+              place.has_elevator
                 ? 'bg-emerald-100 text-emerald-900 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-200'
                 : 'bg-neutral-100 text-neutral-500 border-neutral-200 line-through dark:bg-neutral-800'
             }`}
           >
-            <span>{place.elevator ? '✓' : '✗'}</span>
+            <span>{place.has_elevator ? '✓' : '✗'}</span>
             <span>{t('places.filter_elevator')}</span>
           </span>
 
@@ -95,6 +92,15 @@ export function PlaceCard({ place }: PlaceCardProps) {
               className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded border bg-blue-100 text-blue-900 border-blue-300 dark:bg-blue-950 dark:text-blue-200"
             >
               <span>✓ 🤫 {t('places.filter_quiet')}</span>
+            </span>
+          )}
+
+          {place.distance_km != null && (
+            <span
+              role="listitem"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded border bg-neutral-100 text-neutral-700 border-neutral-300 dark:bg-neutral-800 dark:text-neutral-300"
+            >
+              📍 {place.distance_km} km away
             </span>
           )}
         </div>
