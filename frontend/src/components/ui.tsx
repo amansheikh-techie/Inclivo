@@ -1,6 +1,6 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { AlertCircle, Check, Inbox, Info, Loader2, RefreshCw } from 'lucide-react'
+import { AlertCircle, Check, Inbox, Info, List, Loader2, Map as MapIcon, RefreshCw } from 'lucide-react'
 
 export function Card({
   children,
@@ -152,3 +152,46 @@ export function StateMessage({
     </div>
   )
 }
+
+export function ViewModeToggle({
+  value,
+  onChange,
+}: {
+  value: 'map' | 'list'
+  onChange: (mode: 'map' | 'list') => void
+}) {
+  const { t } = useTranslation()
+  const options: { id: 'map' | 'list'; label: string; icon: typeof MapIcon }[] = [
+    { id: 'map', label: t('finder.view_map'), icon: MapIcon },
+    { id: 'list', label: t('finder.view_list'), icon: List },
+  ]
+
+  return (
+    <div
+      role="group"
+      aria-label={t('finder.view_map')}
+      className="inline-flex items-center gap-1 rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] p-1 self-start lg:self-auto"
+    >
+      {options.map(({ id, label, icon: Icon }) => {
+        const active = value === id
+        return (
+          <button
+            key={id}
+            type="button"
+            onClick={() => onChange(id)}
+            aria-pressed={active}
+            className={`inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-lg px-3.5 py-2 text-xs font-semibold transition-colors ${
+              active
+                ? 'bg-[var(--action)] text-[var(--action-ink)] shadow-sm'
+                : 'text-[var(--ink)] hover:bg-[var(--surface)]'
+            }`}
+          >
+            <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+            <span>{label}</span>
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
