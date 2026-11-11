@@ -1,0 +1,78 @@
+[
+  {
+    "id": "1",
+    "name": "Charminar Monument & Heritage Area",
+    "category": "Historical Site",
+    "lat": 17.3616,
+    "lng": 78.4747,
+    "score": 78,
+    "ramp": true,
+    "elevator": false,
+    "accessible_parking": true,
+    "wheelchair_friendly": true,
+    "quiet": false,
+    "description": "Paved pathways surrounding the perimeter, designated wheelchair entry at Gate 2.",
+    "address": "Charminar Rd, Char Kaman, Ghansi Bazaar, Hyderabad"
+  },
+  {
+    "id": "2",
+    "name": "Salar Jung Museum",
+    "category": "Museum",
+    "lat": 17.3713,
+    "lng": 78.4804,
+    "score": 95,
+    "ramp": true,
+    "elevator": true,
+    "accessible_parking": true,
+    "wheelchair_friendly": true,
+    "quiet": true,
+    "description": "Full elevator access to all 38 galleries, tactile displays, and quiet resting zones.",
+    "address": "Darulshifa, Hyderabad"
+  },
+  {
+    "id": "3",
+    "name": "KBR National Park - Walkway",
+    "category": "Park",
+    "lat": 17.4243,
+    "lng": 78.4194,
+    "score": 88,
+    "ramp": true,
+    "elevator": false,
+    "accessible_parking": true,
+    "wheelchair_friendly": true,
+    "quiet": true,
+    "description": "Outer walking track is paved with gentle slope ramps, audio birdsong guide available.",
+    "address": "Jubilee Hills, Hyderabad"
+  },
+  {
+    "id": "4",
+    "name": "Inorbit Mall Cyberabad",
+    "category": "Shopping",
+    "lat": 17.4339,
+    "lng": 78.3867,
+    "score": 92,
+    "ramp": true,
+    "elevator": true,
+    "accessible_parking": true,
+    "wheelchair_friendly": true,
+    "quiet": false,
+    "description": "Accessible parking next to elevators, wide automatic doors, loaner wheelchairs available at desk.",
+    "address": "HITEC City, Madhapur, Hyderabad"
+  },
+  {
+    "id": "5",
+    "name": "State Central Library",
+    "category": "Library",
+    "lat": 17.3776,
+    "lng": 78.4795,
+    "score": 82,
+    "ramp": true,
+    "elevator": true,
+    "accessible_parking": false,
+    "wheelchair_friendly": true,
+    "quiet": true,
+    "description": "Braille section, quiet reading areas, and ramp entrance.",
+    "address": "Afzal Gunj, Hyderabad"
+  }
+]
+

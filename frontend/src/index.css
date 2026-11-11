@@ -1,0 +1,70 @@
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+/* Sensory & Accessibility Modes */
+:root {
+  --font-scale: 100%;
+}
+
+html {
+  font-size: var(--font-scale);
+}
+
+/* High Contrast Mode */
+html[data-mode*="high-contrast"] {
+  background-color: #000000 !important;
+  color: #ffff00 !important;
+}
+
+html[data-mode*="high-contrast"] body {
+  background-color: #000000 !important;
+  color: #ffff00 !important;
+}
+
+html[data-mode*="high-contrast"] * {
+  border-color: #ffff00 !important;
+}
+
+html[data-mode*="high-contrast"] a,
+html[data-mode*="high-contrast"] button {
+  outline: 2px solid #ffff00 !important;
+  color: #ffff00 !important;
+}
+
+/* Large Text Mode */
+html[data-mode*="large-text"] {
+  --font-scale: 130%;
+}
+
+/* Reduced Motion Mode */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+html[data-mode*="reduce-motion"] *,
+html[data-mode*="reduce-motion"] *::before,
+html[data-mode*="reduce-motion"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Dyslexia Friendly Font */
+html[data-mode*="dyslexia"] body {
+  font-family: 'OpenDyslexic', 'Comic Sans MS', 'Arial', sans-serif !important;
+  letter-spacing: 0.08em;
+  word-spacing: 0.15em;
+  line-height: 1.8;
+}
+
+/* Focus ring for all interactive elements */
+:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 2px;
+}
