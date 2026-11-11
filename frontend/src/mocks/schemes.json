@@ -1,0 +1,47 @@
+[
+  {
+    "id": "s1",
+    "name": "ADIP Scheme (Assistance to Disabled Persons)",
+    "disability_type": "all",
+    "state": "All India",
+    "benefit_type": "Aid & Appliances",
+    "eligibility": "Indian citizen with 40% or more disability, monthly income under ₹20,000.",
+    "benefits": "Free or subsidised aids, motorized tricycles, braille kits, hearing aids.",
+    "simplified": "If you have a 40%+ disability certificate and earn less than 20,000 per month, the government gives you free wheelchairs, hearing aids, or braille kits.",
+    "apply_url": "https://adip.depwd.gov.in"
+  },
+  {
+    "id": "s2",
+    "name": "Aasara Pension for Persons with Disabilities",
+    "disability_type": "all",
+    "state": "Telangana",
+    "benefit_type": "Financial",
+    "eligibility": "Telangana resident, SADAREM certificate with 40%+ disability (any age).",
+    "benefits": "Monthly financial aid of ₹4,016 directly transferred to bank account.",
+    "simplified": "People with 40% disability living in Telangana receive 4,016 rupees in their bank account every month.",
+    "apply_url": "https://aasara.telangana.gov.in"
+  },
+  {
+    "id": "s3",
+    "name": "Unique Disability ID (UDID) Card",
+    "disability_type": "all",
+    "state": "All India",
+    "benefit_type": "ID & Access",
+    "eligibility": "Any Indian citizen with a verified benchmark disability.",
+    "benefits": "National unified digital card for availing travel concessions, state welfare, and healthcare.",
+    "simplified": "One single official smart card for all disability benefits and train/bus travel discounts nationwide.",
+    "apply_url": "https://www.swavlambancard.gov.in"
+  },
+  {
+    "id": "s4",
+    "name": "National Fellowship for Persons with Disabilities (NFPwD)",
+    "disability_type": "all",
+    "state": "All India",
+    "benefit_type": "Education",
+    "eligibility": "Students with benchmark disability pursuing regular M.Phil / Ph.D.",
+    "benefits": "Monthly stipend of ₹31,000 to ₹35,000 plus contingency allowance for 5 years.",
+    "simplified": "Financial support for higher education (research and doctorate) for students with disability.",
+    "apply_url": "https://ugcnet.nta.ac.in"
+  }
+]
+
