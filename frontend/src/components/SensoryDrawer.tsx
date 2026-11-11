@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Check, Contrast, Eye, Moon, RotateCcw, Sparkles, Type, X } from 'lucide-react'
 import type { SensoryMode } from '../hooks/useSensoryMode'
@@ -19,14 +19,21 @@ export function SensoryDrawer({
   resetModes,
 }: SensoryDrawerProps) {
   const { t } = useTranslation()
+  const closeBtnRef = useRef<HTMLButtonElement>(null)
+  const openerRef = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
     if (!open) return
+    openerRef.current = document.activeElement as HTMLElement | null
+    closeBtnRef.current?.focus()
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
     }
     window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      openerRef.current?.focus()
+    }
   }, [open, onClose])
 
   if (!open) return null
@@ -56,6 +63,7 @@ export function SensoryDrawer({
             {t('sensory.title')}
           </h2>
           <button
+            ref={closeBtnRef}
             type="button"
             onClick={onClose}
             aria-label={t('nav.close')}

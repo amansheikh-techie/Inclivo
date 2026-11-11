@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Bot, Captions, Home, MapPin, MoreHorizontal, SlidersHorizontal, X } from 'lucide-react'
@@ -21,14 +21,21 @@ export function BottomNav({ onOpenSensory }: BottomNavProps) {
   const { t } = useTranslation()
   const location = useLocation()
   const [moreOpen, setMoreOpen] = useState(false)
+  const closeBtnRef = useRef<HTMLButtonElement>(null)
+  const openerRef = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
     if (!moreOpen) return
+    openerRef.current = document.activeElement as HTMLElement | null
+    closeBtnRef.current?.focus()
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setMoreOpen(false)
     }
     window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      openerRef.current?.focus()
+    }
   }, [moreOpen])
 
   const moreItems = NAV_ITEMS.filter((item) => MORE_ROUTES.has(item.to))
@@ -54,6 +61,7 @@ export function BottomNav({ onOpenSensory }: BottomNavProps) {
                 {t('nav.more_tools')}
               </h2>
               <button
+                ref={closeBtnRef}
                 type="button"
                 onClick={() => setMoreOpen(false)}
                 aria-label={t('nav.close')}

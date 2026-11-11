@@ -241,7 +241,7 @@ export function Assistant() {
           {!isSupported && (
             <p
               role="status"
-              className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-50 dark:bg-amber-950/50 border border-amber-500/40 text-amber-950 dark:text-amber-100 text-xs font-medium"
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-[var(--warn-bg)] border border-[var(--warn-border)] text-[var(--warn-ink)] text-xs font-medium"
             >
               <AlertTriangle className="w-4 h-4 shrink-0" aria-hidden="true" />
               <span>{t('captions.unsupported')}</span>
@@ -258,7 +258,7 @@ export function Assistant() {
               type="button"
               onClick={stop}
               disabled={!isSpeaking}
-              className="min-h-[44px] px-4 py-2.5 rounded-xl bg-red-700 hover:bg-red-800 text-white text-sm font-semibold inline-flex items-center gap-2 cursor-pointer transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="min-h-[44px] px-4 py-2.5 rounded-xl bg-[var(--danger-solid)] text-[var(--danger-solid-ink)] text-sm font-semibold inline-flex items-center gap-2 cursor-pointer transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <VolumeX className="w-4 h-4 shrink-0" aria-hidden="true" />
               <span>{t('assistant.stop')}</span>
@@ -407,7 +407,7 @@ export function Assistant() {
                       isUser
                         ? 'bg-[var(--action)] text-[var(--action-ink)]'
                         : m.isError
-                          ? 'bg-red-50 dark:bg-red-950/40 text-red-900 dark:text-red-100 border border-red-400'
+                          ? 'bg-[var(--danger-bg)] text-[var(--danger-ink)] border border-[var(--danger-border)]'
                           : 'bg-[var(--surface-muted)] text-[var(--ink)] border border-[var(--border)]'
                     }`}
                   >

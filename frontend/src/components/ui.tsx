@@ -133,7 +133,7 @@ export function StateMessage({
       className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-8 text-center"
     >
       {isError ? (
-        <AlertCircle className="h-8 w-8 text-red-700 dark:text-red-400" aria-hidden="true" />
+        <AlertCircle className="h-8 w-8 text-[var(--danger-ink)]" aria-hidden="true" />
       ) : (
         <Inbox className="h-8 w-8 text-[var(--ink-muted)]" aria-hidden="true" />
       )}

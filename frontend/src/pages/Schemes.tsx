@@ -231,7 +231,7 @@ export function Schemes() {
             {checkerError && (
               <p
                 role="alert"
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-700 dark:text-red-400"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--danger-ink)]"
               >
                 <AlertCircle className="w-4 h-4 shrink-0" aria-hidden="true" />
                 <span>{checkerError}</span>

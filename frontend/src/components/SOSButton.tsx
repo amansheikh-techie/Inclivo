@@ -100,23 +100,23 @@ export function SOSButton() {
         className="pointer-events-none fixed bottom-36 right-4 z-50 max-w-xs lg:bottom-24 lg:right-6"
       >
         {statusMessage && (
-          <div className="pointer-events-auto flex flex-col gap-2 rounded-2xl border-2 border-red-400 bg-red-950 px-4 py-3 text-sm font-semibold text-white shadow-xl">
+          <div className="pointer-events-auto flex flex-col gap-2 rounded-2xl border-2 border-[var(--danger-border)] bg-[var(--danger-solid)] px-4 py-3 text-sm font-semibold text-[var(--danger-solid-ink)] shadow-xl">
             <div className="flex items-start justify-between gap-2">
               <span>{statusMessage}</span>
               <button
                 type="button"
                 onClick={() => setStatusMessage(null)}
                 aria-label={t('nav.close')}
-                className="inline-flex min-h-[32px] min-w-[32px] cursor-pointer items-center justify-center rounded-lg bg-red-900 text-white"
+                className="inline-flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center rounded-xl border border-current/30"
               >
                 <X className="h-4 w-4" aria-hidden="true" />
               </button>
             </div>
-            <p className="text-xs font-normal text-red-100">{t('sos.disclaimer')}</p>
+            <p className="text-xs font-normal opacity-95">{t('sos.disclaimer')}</p>
             {smsHref && (
               <a
                 href={smsHref}
-                className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-white px-3 py-2 text-xs font-bold text-red-900"
+                className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-[var(--surface)] px-3 py-2 text-xs font-bold text-[var(--ink)] border border-[var(--border)]"
               >
                 <MessageSquare className="h-4 w-4" aria-hidden="true" />
                 <span>{t('sos.sms_action')}</span>
@@ -128,15 +128,15 @@ export function SOSButton() {
 
       <div className="fixed bottom-20 right-4 z-40 flex flex-col items-end gap-2 lg:bottom-6 lg:right-6">
         {countdown !== null ? (
-          <div className="flex max-w-xs flex-col items-center gap-2 rounded-2xl border-2 border-red-400 bg-red-950 p-4 text-center text-white shadow-2xl">
-            <span className="text-sm font-extrabold uppercase tracking-wide text-red-100">
+          <div className="flex max-w-xs flex-col items-center gap-2 rounded-2xl border-2 border-[var(--danger-border)] bg-[var(--danger-solid)] p-4 text-center text-[var(--danger-solid-ink)] shadow-2xl">
+            <span className="text-sm font-extrabold uppercase tracking-wide">
               {t('sos.cancelling').replace('{seconds}', String(countdown))}
             </span>
-            <p className="text-xs text-red-100">{t('sos.disclaimer')}</p>
+            <p className="text-xs opacity-95">{t('sos.disclaimer')}</p>
             <button
               type="button"
               onClick={cancelEmergency}
-              className="min-h-[44px] cursor-pointer rounded-full bg-white px-5 py-2 text-sm font-bold text-red-900 hover:bg-neutral-100"
+              className="min-h-[44px] cursor-pointer rounded-full bg-[var(--surface)] px-5 py-2 text-sm font-bold text-[var(--ink)] border border-[var(--border)]"
             >
               {t('sos.cancel')}
             </button>
@@ -156,8 +156,8 @@ export function SOSButton() {
             }}
             onKeyUp={endHold}
             aria-label={`${t('sos.button')}. ${t('sos.holding')} ${t('sos.disclaimer')}`}
-            className={`flex min-h-[52px] min-w-[52px] cursor-pointer items-center gap-2 rounded-full border-2 border-white px-5 py-3 text-sm font-extrabold text-white shadow-xl transition-transform ${
-              holding ? 'scale-105 bg-red-800 ring-4 ring-red-300' : 'bg-red-700 hover:bg-red-800'
+            className={`flex min-h-[52px] min-w-[52px] cursor-pointer items-center gap-2 rounded-full border-2 border-[var(--danger-solid-ink)] bg-[var(--danger-solid)] px-5 py-3 text-sm font-extrabold text-[var(--danger-solid-ink)] shadow-xl transition-transform ${
+              holding ? 'scale-105 ring-4 ring-[var(--danger-border)]' : ''
             }`}
           >
             <AlertTriangle className="h-5 w-5 shrink-0" aria-hidden="true" />
