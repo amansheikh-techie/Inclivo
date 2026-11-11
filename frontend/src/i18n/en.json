@@ -1,0 +1,119 @@
+{
+  "brand": "Inclivo",
+  "tagline": "Accessibility Without Boundaries",
+  "hero_desc": "Empowering everyone with accessible places, clean washrooms, assistive AI, real-time live captions, and simplified government welfare.",
+  "explore_features": "Explore Accessibility Tools",
+  "nav": {
+    "home": "Home",
+    "places": "Accessible Places",
+    "washrooms": "Washrooms",
+    "assistant": "AI Assistant",
+    "captions": "Live Captions",
+    "schemes": "Government Schemes",
+    "report": "Report Issue",
+    "passport": "Accessibility Passport",
+    "about": "About"
+  },
+  "sensory": {
+    "title": "Sensory & Display Modes",
+    "high_contrast": "High Contrast",
+    "large_text": "Large Text",
+    "reduce_motion": "Reduce Motion",
+    "dyslexia_font": "Dyslexia Friendly",
+    "reset": "Reset Modes"
+  },
+  "places": {
+    "title": "Accessible Places Near You",
+    "subtitle": "Discover wheelchair accessible spots, ramps, quiet zones, and elevators.",
+    "near_me": "Find Near Me",
+    "filter_ramp": "Ramp Access",
+    "filter_elevator": "Elevator",
+    "filter_parking": "Accessible Parking",
+    "filter_wheelchair": "Wheelchair Friendly",
+    "filter_quiet": "Quiet Zone",
+    "accessibility_score": "Accessibility Score",
+    "get_directions": "Get Directions (OSM)",
+    "no_results": "No accessible places found matching your filters."
+  },
+  "washrooms": {
+    "title": "Accessible Washroom Finder",
+    "subtitle": "Locate clean, verified wheelchair-accessible public restrooms.",
+    "rating": "Cleanliness Rating",
+    "verified": "Verified Accessible",
+    "unverified": "Community Reported",
+    "last_checked": "Last checked",
+    "sort_rating": "Highest Rated",
+    "sort_distance": "Closest"
+  },
+  "assistant": {
+    "title": "AI Assistant for Blind & Low Vision",
+    "subtitle": "Speak to navigate, analyze your surroundings, or read documents aloud.",
+    "speak_button": "Hold or Click to Speak",
+    "listening": "Listening...",
+    "stop": "Stop Speaking",
+    "repeat": "Repeat Response",
+    "describe_scene": "Describe Surroundings",
+    "read_document": "Read Text (OCR)",
+    "upload_image": "Upload / Take Photo",
+    "voice_commands_tip": "Voice commands: 'find washroom', 'read this', 'schemes for blind'",
+    "status_idle": "Assistant is ready to assist.",
+    "status_speaking": "Speaking answer..."
+  },
+  "captions": {
+    "title": "Live Captions for Deaf & Hard of Hearing",
+    "subtitle": "Real-time speech-to-text with adjustable contrast and sizing.",
+    "start": "Start Captions",
+    "stop": "Stop Captions",
+    "listening": "Capturing speech in real-time...",
+    "font_size": "Text Size",
+    "save_txt": "Save Transcript (.txt)",
+    "unsupported": "Live speech recognition is best supported in Google Chrome and Microsoft Edge."
+  },
+  "schemes": {
+    "title": "Government Schemes & Welfare Finder",
+    "subtitle": "Find verified state and central welfare programs for persons with disabilities.",
+    "search_placeholder": "Search schemes by keyword...",
+    "filter_disability": "Disability Category",
+    "filter_benefit": "Benefit Type",
+    "apply_now": "Apply on Official Portal",
+    "simplify_btn": "Explain in Simple Words",
+    "eligibility_checker": "Quick Eligibility Checker",
+    "check_btn": "Check My Eligibility",
+    "age": "Age",
+    "income": "Annual Household Income",
+    "state": "State / UT"
+  },
+  "report": {
+    "title": "Community Accessibility Reporting",
+    "subtitle": "Help build an obstacle-free city. Report broken ramps, inaccessible paths, or audio beeper faults.",
+    "issue_type": "Issue Category",
+    "description": "Describe the obstacle",
+    "submit": "Submit Community Report",
+    "upvote": "Upvote Issue",
+    "status_open": "Open Issue",
+    "status_resolved": "Resolved"
+  },
+  "passport": {
+    "title": "Accessibility Passport",
+    "subtitle": "Save your mobility, sensory, and emergency settings across Inclivo.",
+    "save": "Save Passport Preferences",
+    "contacts": "Emergency Contacts",
+    "add_contact": "Add Contact",
+    "login_prompt": "Sign in with Supabase to sync your passport anywhere."
+  },
+  "sos": {
+    "button": "SOS Emergency",
+    "holding": "Hold for 2 seconds to alert...",
+    "cancelling": "Alert triggered! Cancel in {seconds}s",
+    "cancel": "Cancel Emergency Alert",
+    "dispatched": "Emergency alert sent with your current GPS coordinates."
+  },
+  "about": {
+    "title": "About Inclivo",
+    "tagline": "Bridging accessibility gaps through modern, voice-first, and sensory-aware technology.",
+    "problem_title": "The Problem",
+    "problem_desc": "Over 1 billion people worldwide experience disabilities, yet public spaces, transport, and digital information remain riddled with physical and communicative barriers.",
+    "mission_title": "Our Mission",
+    "mission_desc": "To provide a unified, accessible-first platform with zero-barrier design, verified mapping, live speech assistive tools, and streamlined welfare access."
+  }
+}
