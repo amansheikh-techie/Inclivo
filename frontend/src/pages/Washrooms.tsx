@@ -1,155 +1,227 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { api, type Washroom } from '../lib/api'
-import { MapView } from '../components/MapView'
+import {
+  BadgeCheck,
+  LocateFixed,
+  Navigation,
+  RotateCcw,
+  Star,
+} from 'lucide-react'
+import { api, useDemoData, type Washroom } from '../lib/api'
 import { useGeolocation } from '../hooks/useGeolocation'
+import { MapView } from '../components/MapView'
+import { WashroomCard } from '../components/WashroomCard'
+import {
+  ActionButton,
+  Card,
+  DemoBanner,
+  FilterChip,
+  SecondaryButton,
+  StateMessage,
+  ViewModeToggle,
+} from '../components/ui'
+
+type SortKey = 'rating' | 'verified' | 'distance'
 
 export function Washrooms() {
   const { t } = useTranslation()
   const { coords, loading: geoLoading, getLocation } = useGeolocation()
+  const isDemo = useDemoData()
+
   const [washrooms, setWashrooms] = useState<Washroom[]>([])
   const [loading, setLoading] = useState(true)
-  const [sortBy, setSortBy] = useState<'rating' | 'verified'>('rating')
+  const [error, setError] = useState(false)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [verifiedOnly, setVerifiedOnly] = useState(false)
+  const [sortBy, setSortBy] = useState<SortKey>('rating')
+  const [viewMode, setViewMode] = useState<'map' | 'list'>('map')
 
-  useEffect(() => {
-    api.getWashrooms()
+  const handleRetry = useCallback(() => {
+    setLoading(true)
+    setError(false)
+    api
+      .getWashrooms()
       .then((data) => setWashrooms(data))
+      .catch(() => setError(true))
       .finally(() => setLoading(false))
   }, [])
 
-  const sortedWashrooms = [...washrooms].sort((a, b) => {
-    if (sortBy === 'rating') return b.rating - a.rating
-    if (sortBy === 'verified') return (b.verified ? 1 : 0) - (a.verified ? 1 : 0)
-    return 0
-  })
+  useEffect(() => {
+    let active = true
+    api
+      .getWashrooms()
+      .then((data) => {
+        if (active) setWashrooms(data)
+      })
+      .catch(() => {
+        if (active) setError(true)
+      })
+      .finally(() => {
+        if (active) setLoading(false)
+      })
+    return () => {
+      active = false
+    }
+  }, [])
 
-  const markers = sortedWashrooms.map((w) => ({
+  const filtered = washrooms
+    .filter((w) => (verifiedOnly ? w.verified : true))
+    .slice()
+    .sort((a, b) => {
+      if (sortBy === 'verified') {
+        if (a.verified !== b.verified) return a.verified ? -1 : 1
+        return (b.cleanliness_rating ?? 0) - (a.cleanliness_rating ?? 0)
+      }
+      if (sortBy === 'distance') {
+        return (a.distance_km ?? 9999) - (b.distance_km ?? 9999)
+      }
+      return (b.cleanliness_rating ?? 0) - (a.cleanliness_rating ?? 0)
+    })
+
+  const selectedWashroom =
+    filtered.find((w) => w.id === selectedId) || filtered[0] || null
+
+  const markers = filtered.map((w) => ({
     id: w.id,
     lat: w.lat,
     lng: w.lng,
     title: w.name,
-    subtitle: `Rating: ${w.rating}/5.0 • ${w.verified ? 'Verified' : 'Community'}`,
-    badge: `★ ${w.rating}`,
+    subtitle:
+      w.cleanliness_rating != null
+        ? `${t('washrooms.rating')}: ${w.cleanliness_rating.toFixed(1)}/5`
+        : t('finder.no_rating'),
+    badge: w.verified ? t('washrooms.verified') : t('washrooms.unverified'),
   }))
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-6">
-      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="flex flex-col gap-6">
+      {isDemo && <DemoBanner />}
+
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black text-neutral-900 dark:text-neutral-100">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--ink)]">
             {t('washrooms.title')}
           </h1>
-          <p className="text-neutral-600 dark:text-neutral-400 text-sm mt-1">
+          <p className="text-sm sm:text-base text-[var(--ink-muted)] mt-1">
             {t('washrooms.subtitle')}
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <label htmlFor="sort-washrooms" className="text-sm font-semibold">
-            Sort by:
-          </label>
-          <select
-            id="sort-washrooms"
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as any)}
-            className="min-h-[44px] px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm font-semibold"
-          >
-            <option value="rating">{t('washrooms.sort_rating')}</option>
-            <option value="verified">{t('washrooms.verified')}</option>
-          </select>
-
-          <button
-            type="button"
-            onClick={getLocation}
-            disabled={geoLoading}
-            className="min-h-[44px] px-4 py-2 rounded-lg bg-teal-700 hover:bg-teal-800 text-white font-bold text-sm cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
-          >
-            <span>🎯</span>
-            <span>{geoLoading ? 'Locating...' : 'Near Me'}</span>
-          </button>
-        </div>
+        <ActionButton
+          type="button"
+          onClick={getLocation}
+          disabled={geoLoading}
+        >
+          <LocateFixed className="w-4 h-4 shrink-0" aria-hidden="true" />
+          <span>{geoLoading ? t('finder.locating') : t('places.near_me')}</span>
+        </ActionButton>
       </header>
 
-      {/* Map */}
-      <MapView center={[coords.lat, coords.lng]} markers={markers} />
+      {/* Filter, Sort & View Toggle Bar */}
+      <section
+        aria-label={t('finder.sort_label')}
+        className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 p-3 sm:p-4 bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-sm"
+      >
+        <div className="flex flex-wrap items-center gap-2">
+          <FilterChip
+            active={verifiedOnly}
+            onClick={() => setVerifiedOnly((v) => !v)}
+            icon={<BadgeCheck className="w-4 h-4" />}
+            label={t('finder.verified_only')}
+          />
+          <FilterChip
+            active={sortBy === 'rating'}
+            onClick={() => setSortBy('rating')}
+            icon={<Star className="w-4 h-4" />}
+            label={t('washrooms.sort_rating')}
+          />
+          <FilterChip
+            active={sortBy === 'verified'}
+            onClick={() => setSortBy('verified')}
+            icon={<BadgeCheck className="w-4 h-4" />}
+            label={t('washrooms.verified')}
+          />
+          <FilterChip
+            active={sortBy === 'distance'}
+            onClick={() => setSortBy('distance')}
+            icon={<Navigation className="w-4 h-4" />}
+            label={t('washrooms.sort_distance')}
+          />
 
-      {/* Washrooms Cards Grid */}
-      <section aria-labelledby="washrooms-list-heading" className="flex flex-col gap-4">
-        <h2 id="washrooms-list-heading" className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
-          Accessible Restrooms ({sortedWashrooms.length})
-        </h2>
+          {verifiedOnly && (
+            <SecondaryButton
+              type="button"
+              onClick={() => setVerifiedOnly(false)}
+              className="px-3 py-2 text-xs"
+            >
+              <RotateCcw className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+              <span>{t('finder.clear_filters')}</span>
+            </SecondaryButton>
+          )}
+        </div>
 
-        {loading ? (
-          <div className="p-8 text-center text-sm text-neutral-500 animate-pulse">
-            Loading accessible restrooms...
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {sortedWashrooms.map((w) => {
-              const osmUrl = `https://www.openstreetmap.org/directions?engine=fossgis_osrm_car&route=${encodeURIComponent(
-                '17.3850,78.4867'
-              )}%3B${encodeURIComponent(`${w.lat},${w.lng}`)}`
-
-              return (
-                <article
-                  key={w.id}
-                  className="p-5 bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-xl shadow-sm flex flex-col justify-between gap-4"
-                >
-                  <div>
-                    <div className="flex items-start justify-between gap-2">
-                      <h3 className="text-lg font-bold text-neutral-900 dark:text-neutral-100">
-                        {w.name}
-                      </h3>
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300">
-                        ★ {w.rating}
-                      </span>
-                    </div>
-
-                    <p className="text-xs text-neutral-500 mt-1 font-mono">
-                      📍 {w.address}
-                    </p>
-
-                    <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold">
-                      <span
-                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded border ${
-                          w.verified
-                            ? 'bg-emerald-100 text-emerald-900 border-emerald-300'
-                            : 'bg-neutral-100 text-neutral-600 border-neutral-300'
-                        }`}
-                      >
-                        <span>{w.verified ? '✓' : 'ℹ️'}</span>
-                        <span>{w.verified ? t('washrooms.verified') : t('washrooms.unverified')}</span>
-                      </span>
-
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded border bg-blue-50 text-blue-900 border-blue-200">
-                        <span>♿ Wheelchair: {w.wheelchair_friendly ? 'Yes' : 'No'}</span>
-                      </span>
-
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded border bg-purple-50 text-purple-900 border-purple-200">
-                        <span>Fee: {w.fee}</span>
-                      </span>
-                    </div>
-
-                    <p className="text-xs text-neutral-500 mt-3">
-                      {t('washrooms.last_checked')}: {w.last_verified}
-                    </p>
-                  </div>
-
-                  <a
-                    href={osmUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="min-h-[44px] px-4 py-2.5 rounded-lg bg-teal-800 text-white font-bold text-sm text-center hover:bg-teal-900 flex items-center justify-center gap-2"
-                  >
-                    <span>🧭 Directions (OSM)</span>
-                    <span className="sr-only">, opens in new window</span>
-                  </a>
-                </article>
-              )
-            })}
-          </div>
-        )}
+        <ViewModeToggle value={viewMode} onChange={setViewMode} />
       </section>
+
+      <div aria-live="polite" className="text-sm font-medium text-[var(--ink-muted)]">
+        {!loading && !error && t('finder.results_count', { count: filtered.length })}
+      </div>
+
+      {loading ? (
+        <StateMessage kind="loading" />
+      ) : error ? (
+        <StateMessage kind="error" onRetry={handleRetry} />
+      ) : filtered.length === 0 ? (
+        <StateMessage
+          kind="empty"
+          title={t('finder.washrooms_empty')}
+          onRetry={verifiedOnly ? () => setVerifiedOnly(false) : handleRetry}
+        />
+      ) : (
+        <>
+          {viewMode === 'map' && (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                <MapView
+                  center={[coords.lat, coords.lng]}
+                  markers={markers}
+                  onMarkerSelect={(id) => setSelectedId(id)}
+                  ariaLabel={t('finder.map_aria')}
+                />
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <h2 className="text-lg font-bold text-[var(--ink)]">
+                  {t('finder.selected_location')}
+                </h2>
+                {selectedWashroom ? (
+                  <WashroomCard washroom={selectedWashroom} />
+                ) : (
+                  <Card>
+                    <p className="text-sm text-[var(--ink-muted)]">
+                      {t('finder.select_pin_hint')}
+                    </p>
+                  </Card>
+                )}
+              </div>
+            </div>
+          )}
+
+          <section aria-labelledby="all-washrooms-heading" className="flex flex-col gap-4">
+            <h2
+              id="all-washrooms-heading"
+              className="text-xl font-bold text-[var(--ink)]"
+            >
+              {t('finder.all_washrooms')} ({filtered.length})
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filtered.map((w) => (
+                <WashroomCard key={w.id} washroom={w} />
+              ))}
+            </div>
+          </section>
+        </>
+      )}
     </div>
   )
 }

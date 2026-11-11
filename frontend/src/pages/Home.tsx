@@ -1,120 +1,99 @@
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import {
+  ArrowRight,
+  Bath,
+  Bot,
+  Captions,
+  Compass,
+  FileText,
+  Flag,
+  MapPin,
+  Sparkles,
+} from 'lucide-react'
 
 export function Home() {
   const { t } = useTranslation()
 
   const features = [
-    {
-      to: '/places',
-      icon: '🗺️',
-      title: t('nav.places'),
-      desc: t('places.subtitle'),
-      color: 'border-blue-500 bg-blue-50/50 dark:bg-blue-950/20',
-    },
-    {
-      to: '/washrooms',
-      icon: '🚻',
-      title: t('nav.washrooms'),
-      desc: t('washrooms.subtitle'),
-      color: 'border-teal-500 bg-teal-50/50 dark:bg-teal-950/20',
-    },
-    {
-      to: '/assistant',
-      icon: '🎙️',
-      title: t('nav.assistant'),
-      desc: t('assistant.subtitle'),
-      color: 'border-purple-500 bg-purple-50/50 dark:bg-purple-950/20',
-    },
-    {
-      to: '/captions',
-      icon: '💬',
-      title: t('nav.captions'),
-      desc: t('captions.subtitle'),
-      color: 'border-amber-500 bg-amber-50/50 dark:bg-amber-950/20',
-    },
-    {
-      to: '/schemes',
-      icon: '🏛️',
-      title: t('nav.schemes'),
-      desc: t('schemes.subtitle'),
-      color: 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/20',
-    },
-    {
-      to: '/report',
-      icon: '📢',
-      title: t('nav.report'),
-      desc: t('report.subtitle'),
-      color: 'border-rose-500 bg-rose-50/50 dark:bg-rose-950/20',
-    },
+    { to: '/places', icon: MapPin, title: t('nav.places'), desc: t('places.subtitle') },
+    { to: '/washrooms', icon: Bath, title: t('nav.washrooms'), desc: t('washrooms.subtitle') },
+    { to: '/assistant', icon: Bot, title: t('nav.assistant'), desc: t('assistant.subtitle') },
+    { to: '/captions', icon: Captions, title: t('nav.captions'), desc: t('captions.subtitle') },
+    { to: '/schemes', icon: FileText, title: t('nav.schemes'), desc: t('schemes.subtitle') },
+    { to: '/report', icon: Flag, title: t('nav.report'), desc: t('report.subtitle') },
   ]
 
   return (
-    <div className="flex flex-col gap-12 py-8">
-      {/* Hero Section */}
-      <section className="text-center max-w-4xl mx-auto px-4 flex flex-col items-center gap-6">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-200 text-sm font-bold border border-blue-300 dark:border-blue-700">
-          <span>🌟</span>
-          <span>{t('brand')} – 48-Hour Accessibility Platform</span>
-        </div>
-
-        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-neutral-900 dark:text-neutral-100 leading-tight">
-          {t('tagline')}
-        </h1>
-
-        <p className="text-lg sm:text-xl text-neutral-600 dark:text-neutral-300 max-w-2xl leading-relaxed">
-          {t('hero_desc')}
-        </p>
-
-        <div className="flex flex-wrap items-center justify-center gap-4 mt-2">
-          <Link
-            to="/places"
-            className="min-h-[52px] px-8 py-3.5 rounded-xl bg-blue-700 hover:bg-blue-800 text-white font-extrabold text-base shadow-lg transition-transform focus-visible:ring-4 focus-visible:ring-blue-300 flex items-center gap-2"
+    <div className="flex flex-col gap-10 py-2">
+      <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-6 py-10 text-center shadow-sm sm:px-10 sm:py-12">
+        <div className="mx-auto flex max-w-3xl flex-col items-center gap-5">
+          <div
+            data-accent-fill="true"
+            className="inline-flex items-center gap-2 rounded-full bg-[var(--accent)] px-4 py-1.5 text-sm font-bold text-[var(--accent-ink)]"
           >
-            <span>🧭</span>
-            <span>{t('explore_features')}</span>
-          </Link>
-          <Link
-            to="/assistant"
-            className="min-h-[52px] px-8 py-3.5 rounded-xl bg-purple-700 hover:bg-purple-800 text-white font-extrabold text-base shadow-lg transition-transform focus-visible:ring-4 focus-visible:ring-purple-300 flex items-center gap-2"
-          >
-            <span>🎙️</span>
-            <span>{t('nav.assistant')}</span>
-          </Link>
+            <Sparkles className="h-4 w-4 shrink-0" aria-hidden="true" />
+            <span>{t('home.badge')}</span>
+          </div>
+
+          <h1 className="text-3xl font-extrabold leading-tight tracking-tight text-[var(--ink)] sm:text-5xl">
+            {t('tagline')}
+          </h1>
+
+          <p className="max-w-2xl text-base leading-relaxed text-[var(--ink-muted)] sm:text-lg">
+            {t('hero_desc')}
+          </p>
+
+          <div className="mt-1 flex flex-wrap items-center justify-center gap-3">
+            <Link
+              to="/places"
+              data-action-fill="true"
+              className="inline-flex min-h-[48px] items-center gap-2 rounded-xl bg-[var(--action)] px-6 py-3 text-base font-bold text-[var(--action-ink)] shadow-sm transition-colors hover:bg-[var(--action-hover)]"
+            >
+              <Compass className="h-5 w-5 shrink-0" aria-hidden="true" />
+              <span>{t('explore_features')}</span>
+            </Link>
+
+            <Link
+              to="/assistant"
+              className="inline-flex min-h-[48px] items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] px-6 py-3 text-base font-bold text-[var(--ink)] transition-colors hover:opacity-90"
+            >
+              <Bot className="h-5 w-5 shrink-0" aria-hidden="true" />
+              <span>{t('nav.assistant')}</span>
+            </Link>
+          </div>
         </div>
       </section>
 
-      {/* 6 Feature Cards */}
-      <section
-        aria-labelledby="features-heading"
-        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full"
-      >
-        <h2 id="features-heading" className="sr-only">
-          Core Features
+      <section aria-labelledby="features-heading" className="flex flex-col gap-5">
+        <h2 id="features-heading" className="text-2xl font-bold text-[var(--ink)]">
+          {t('home.features_heading')}
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {features.map((f) => (
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+          {features.map(({ to, icon: Icon, title, desc }) => (
             <Link
-              key={f.to}
-              to={f.to}
-              className={`p-6 rounded-2xl border-2 ${f.color} hover:shadow-xl transition-all flex flex-col justify-between gap-4 group focus-visible:ring-4 focus-visible:ring-blue-600`}
+              key={to}
+              to={to}
+              className="group flex flex-col justify-between gap-5 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm transition-shadow hover:shadow-md"
             >
               <div>
-                <span className="text-4xl block mb-3" aria-hidden="true">
-                  {f.icon}
+                <span
+                  data-accent-fill="true"
+                  className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--accent)] text-[var(--accent-ink)]"
+                >
+                  <Icon className="h-6 w-6" aria-hidden="true" />
                 </span>
-                <h3 className="text-xl font-bold text-neutral-900 dark:text-neutral-100 group-hover:text-blue-600 dark:group-hover:text-blue-400">
-                  {f.title}
-                </h3>
-                <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-2 leading-relaxed">
-                  {f.desc}
-                </p>
+                <h3 className="text-lg font-bold text-[var(--ink)]">{title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-[var(--ink-muted)]">{desc}</p>
               </div>
 
-              <div className="inline-flex items-center gap-2 text-sm font-bold text-blue-700 dark:text-blue-400">
-                <span>Open Tool</span>
-                <span aria-hidden="true">→</span>
+              <div className="inline-flex items-center gap-1.5 text-sm font-bold text-[var(--accent-text)]">
+                <span>{t('home.open_tool')}</span>
+                <ArrowRight
+                  className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
+                  aria-hidden="true"
+                />
               </div>
             </Link>
           ))}

@@ -1,3 +1,5 @@
+import { Mic, Square } from 'lucide-react'
+
 interface VoiceButtonProps {
   isListening: boolean
   onClick: () => void
@@ -20,15 +22,17 @@ export function VoiceButton({
       disabled={disabled}
       aria-label={ariaLabel}
       aria-pressed={isListening}
-      className={`min-h-[48px] min-w-[48px] px-5 py-3 rounded-full font-bold flex items-center justify-center gap-3 transition-colors text-base shadow-md cursor-pointer ${
+      className={`min-h-[60px] min-w-[60px] px-7 py-4 rounded-full font-bold inline-flex items-center justify-center gap-3 transition-colors text-base shadow-md cursor-pointer ${
         isListening
-          ? 'bg-red-600 text-white ring-4 ring-red-300 animate-pulse'
-          : 'bg-blue-700 text-white hover:bg-blue-800'
+          ? 'bg-[var(--danger-solid)] text-[var(--danger-solid-ink)] ring-4 ring-[var(--danger-border)]'
+          : 'bg-[var(--action)] hover:bg-[var(--action-hover)] text-[var(--action-ink)]'
       } disabled:opacity-50 disabled:cursor-not-allowed`}
     >
-      <span aria-hidden="true" className="text-xl">
-        {isListening ? '⏹' : '🎤'}
-      </span>
+      {isListening ? (
+        <Square className="w-5 h-5 shrink-0 fill-current" aria-hidden="true" />
+      ) : (
+        <Mic className="w-6 h-6 shrink-0" aria-hidden="true" />
+      )}
       {label && <span>{label}</span>}
     </button>
   )

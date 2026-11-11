@@ -1,220 +1,481 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { api, type PassportData } from '../lib/api'
+import {
+  AlertCircle,
+  IdCard,
+  Loader2,
+  LogOut,
+  Mail,
+  Phone,
+  Plus,
+  Save,
+  ShieldCheck,
+  Trash2,
+} from 'lucide-react'
+import {
+  api,
+  useDemoData,
+  type EmergencyContact,
+  type PassportData,
+} from '../lib/api'
 import { supabase } from '../lib/supabase'
 import { Toast } from '../components/Toast'
+import {
+  ActionButton,
+  Card,
+  DemoBanner,
+  SecondaryButton,
+  StateMessage,
+} from '../components/ui'
 
 export function Passport() {
-  const { t, i18n } = useTranslation()
-  const [sessionUser, setSessionUser] = useState<string | null>(null)
-  const [emailInput, setEmailInput] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [toastMessage, setToastMessage] = useState<string | null>(null)
+  const { t } = useTranslation()
+  const isDemo = useDemoData()
+
+  const [userEmail, setUserEmail] = useState<string | null>(null)
+  const [authEmail, setAuthEmail] = useState('')
+  const [sendingOtp, setSendingOtp] = useState(false)
+
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
+  const [saving, setSaving] = useState(false)
 
   const [passport, setPassport] = useState<PassportData>({
-    mobility_needs: ['ramp'],
-    vision_needs: [],
-    hearing_needs: [],
-    preferred_language: 'en',
+    mobility_needs: '',
+    vision_needs: '',
+    hearing_needs: '',
     font_size: 'normal',
-    emergency_contacts: [
-      { name: 'Primary Emergency Contact', phone: '+91 9876543210', relation: 'Family' },
-    ],
+    preferred_language: 'en',
+    sensory_mode: false,
   })
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session?.user) {
-        setSessionUser(data.session.user.email || 'Authenticated User')
-      }
-    })
+  const [contacts, setContacts] = useState<EmergencyContact[]>([])
+  const [contactName, setContactName] = useState('')
+  const [contactPhone, setContactPhone] = useState('')
+  const [contactError, setContactError] = useState<string | null>(null)
+  const [addingContact, setAddingContact] = useState(false)
 
-    api.getPassport().then((data) => {
-      if (data) setPassport(data)
-    })
+  const [toast, setToast] = useState<{
+    message: string
+    type: 'success' | 'error' | 'info'
+  } | null>(null)
+
+  useEffect(() => {
+    let active = true
+
+    if (supabase) {
+      supabase.auth.getUser().then(({ data }) => {
+        if (active && data.user?.email) {
+          setUserEmail(data.user.email)
+        }
+      })
+    }
+
+    Promise.all([api.getPassport(), api.getContacts()])
+      .then(([p, c]) => {
+        if (!active) return
+        setPassport(p)
+        setContacts(c)
+      })
+      .catch(() => {
+        if (active) setError(true)
+      })
+      .finally(() => {
+        if (active) setLoading(false)
+      })
+
+    return () => {
+      active = false
+    }
   }, [])
 
-  const handleEmailLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!emailInput) return
+  const handleRetry = () => {
     setLoading(true)
+    setError(false)
+    Promise.all([api.getPassport(), api.getContacts()])
+      .then(([p, c]) => {
+        setPassport(p)
+        setContacts(c)
+      })
+      .catch(() => setError(true))
+      .finally(() => setLoading(false))
+  }
+
+  const handleSendOtp = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!authEmail.trim() || !supabase) {
+      setToast({ message: t('passport_ui.otp_error'), type: 'info' })
+      return
+    }
+    setSendingOtp(true)
     try {
-      const { error } = await supabase.auth.signInWithOtp({ email: emailInput })
-      if (error) {
-        // Fallback for demo when Supabase credentials aren't configured yet
-        setSessionUser(emailInput)
-        setToastMessage(`Signed in as demo user (${emailInput})`)
-      } else {
-        setToastMessage('Check your email for the magic login link!')
-      }
+      const { error: otpErr } = await supabase.auth.signInWithOtp({
+        email: authEmail.trim(),
+      })
+      if (otpErr) throw otpErr
+      setToast({ message: t('passport_ui.otp_sent'), type: 'success' })
     } catch {
-      setSessionUser(emailInput)
-      setToastMessage(`Signed in as demo user (${emailInput})`)
+      setToast({ message: t('passport_ui.otp_error'), type: 'error' })
     } finally {
-      setLoading(false)
+      setSendingOtp(false)
     }
   }
 
-  const handleSave = async (e: React.FormEvent) => {
+  const handleSignOut = async () => {
+    if (!supabase) return
+    await supabase.auth.signOut()
+    setUserEmail(null)
+  }
+
+  const handleSavePassport = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
+    setSaving(true)
     try {
-      await api.savePassport(passport)
-      i18n.changeLanguage(passport.preferred_language)
-      setToastMessage('Accessibility Passport saved & preferences applied!')
+      const saved = await api.savePassport(passport)
+      setPassport(saved)
+      setToast({ message: t('passport_ui.save_success'), type: 'success' })
+    } catch {
+      setToast({ message: t('passport_ui.save_error'), type: 'error' })
     } finally {
-      setLoading(false)
+      setSaving(false)
     }
   }
 
-  const toggleNeed = (category: 'mobility_needs' | 'vision_needs' | 'hearing_needs', item: string) => {
-    setPassport((prev) => ({
-      ...prev,
-      [category]: prev[category].includes(item)
-        ? prev[category].filter((x) => x !== item)
-        : [...prev[category], item],
-    }))
+  const handleAddContact = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!contactName.trim() || !contactPhone.trim()) {
+      setContactError(t('passport_ui.contact_validation'))
+      return
+    }
+    setContactError(null)
+    setAddingContact(true)
+    try {
+      const added = await api.addContact({
+        name: contactName.trim(),
+        phone: contactPhone.trim(),
+      })
+      setContacts((prev) => [...prev, added])
+      setContactName('')
+      setContactPhone('')
+      setToast({ message: t('passport_ui.contact_added'), type: 'success' })
+    } catch {
+      setToast({ message: t('passport_ui.save_error'), type: 'error' })
+    } finally {
+      setAddingContact(false)
+    }
+  }
+
+  const handleDeleteContact = async (id: string) => {
+    try {
+      await api.deleteContact(id)
+      setContacts((prev) => prev.filter((c) => c.id !== id))
+      setToast({ message: t('passport_ui.contact_removed'), type: 'info' })
+    } catch {
+      setToast({ message: t('passport_ui.save_error'), type: 'error' })
+    }
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 flex flex-col gap-8">
-      <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
+    <div className="flex flex-col gap-6 max-w-4xl">
+      {isDemo && <DemoBanner />}
 
-      <header>
-        <h1 className="text-3xl font-black text-neutral-900 dark:text-neutral-100">
-          {t('passport.title')}
-        </h1>
-        <p className="text-neutral-600 dark:text-neutral-400 text-sm mt-1">
-          {t('passport.subtitle')}
-        </p>
-      </header>
-
-      {/* Auth Status Card */}
-      <section className="p-6 bg-blue-50 dark:bg-blue-950/30 rounded-2xl border border-blue-200 dark:border-blue-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <header className="flex items-start gap-4">
+        <span
+          data-accent-fill="true"
+          className="w-12 h-12 rounded-2xl bg-[var(--accent)] text-[var(--accent-ink)] flex items-center justify-center shrink-0"
+          aria-hidden="true"
+        >
+          <IdCard className="w-6 h-6" />
+        </span>
         <div>
-          <span className="text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300">
-            Passport Account
-          </span>
-          <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-200 mt-1">
-            {sessionUser ? `Signed in: ${sessionUser}` : t('passport.login_prompt')}
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--ink)]">
+            {t('nav.passport')}
+          </h1>
+          <p className="text-sm sm:text-base text-[var(--ink-muted)] mt-1">
+            {t('passport_ui.auth_desc')}
           </p>
         </div>
+      </header>
 
-        {!sessionUser && (
-          <form onSubmit={handleEmailLogin} className="flex items-center gap-2">
-            <label htmlFor="auth-email" className="sr-only">
-              Email Address
-            </label>
-            <input
-              id="auth-email"
-              type="email"
-              required
-              placeholder="you@example.com"
-              value={emailInput}
-              onChange={(e) => setEmailInput(e.target.value)}
-              className="min-h-[44px] px-3 py-2 rounded-lg border bg-white dark:bg-neutral-900 text-sm"
-            />
-            <button
-              type="submit"
-              disabled={loading}
-              className="min-h-[44px] px-4 py-2 rounded-lg bg-blue-700 hover:bg-blue-800 text-white font-bold text-sm cursor-pointer disabled:opacity-50"
-            >
-              Sign In
-            </button>
+      <Card>
+        {userEmail ? (
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="inline-flex items-center gap-2.5 text-sm font-semibold text-[var(--ink)]">
+              <ShieldCheck className="w-5 h-5 text-[var(--accent-text)] shrink-0" aria-hidden="true" />
+              <span>
+                {t('passport_ui.signed_in_as')}: {userEmail}
+              </span>
+            </div>
+            <SecondaryButton type="button" onClick={() => void handleSignOut()}>
+              <LogOut className="w-4 h-4 shrink-0" aria-hidden="true" />
+              <span>{t('passport_ui.sign_out')}</span>
+            </SecondaryButton>
+          </div>
+        ) : (
+          <form onSubmit={handleSendOtp} className="flex flex-col gap-3">
+            <h2 className="text-base font-bold text-[var(--ink)]">
+              {t('passport_ui.auth_title')}
+            </h2>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <input
+                type="email"
+                value={authEmail}
+                onChange={(e) => setAuthEmail(e.target.value)}
+                placeholder={t('passport_ui.email_placeholder')}
+                aria-label={t('passport_ui.email_label')}
+                className="flex-1 min-h-[44px] px-4 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--ink)] text-sm placeholder:text-[var(--ink-muted)]"
+              />
+              <ActionButton type="submit" disabled={sendingOtp || !authEmail.trim()}>
+                <Mail className="w-4 h-4 shrink-0" aria-hidden="true" />
+                <span>{t('passport_ui.send_otp')}</span>
+              </ActionButton>
+            </div>
           </form>
         )}
-      </section>
+      </Card>
 
-      {/* Preferences Form */}
-      <form onSubmit={handleSave} className="flex flex-col gap-6">
-        {/* Mobility Needs */}
-        <fieldset className="p-6 bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-300 dark:border-neutral-700">
-          <legend className="text-lg font-bold px-2 text-neutral-900 dark:text-neutral-100">
-            ♿ Mobility Preferences
-          </legend>
-          <div className="flex flex-wrap gap-3 mt-4">
-            {[
-              { id: 'ramp', label: 'Ramp Access Required' },
-              { id: 'elevator', label: 'Elevators Only' },
-              { id: 'step_free', label: 'Step-Free Paths' },
-              { id: 'wide_doors', label: 'Wide Doorways (≥ 90cm)' },
-            ].map((m) => (
-              <button
-                key={m.id}
-                type="button"
-                onClick={() => toggleNeed('mobility_needs', m.id)}
-                aria-pressed={passport.mobility_needs.includes(m.id)}
-                className={`min-h-[44px] px-4 py-2 rounded-lg text-sm font-bold border transition-colors cursor-pointer ${
-                  passport.mobility_needs.includes(m.id)
-                    ? 'bg-blue-700 text-white border-blue-800'
-                    : 'bg-neutral-100 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-700'
-                }`}
-              >
-                {passport.mobility_needs.includes(m.id) ? '✓ ' : '+ '}
-                {m.label}
-              </button>
-            ))}
-          </div>
-        </fieldset>
+      {loading ? (
+        <StateMessage kind="loading" />
+      ) : error ? (
+        <StateMessage kind="error" onRetry={handleRetry} />
+      ) : (
+        <>
+          <Card>
+            <form onSubmit={handleSavePassport} className="flex flex-col gap-5">
+              <h2 className="text-lg font-bold text-[var(--ink)]">
+                {t('passport_ui.needs_heading')}
+              </h2>
 
-        {/* Sensory & Vision Needs */}
-        <fieldset className="p-6 bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-300 dark:border-neutral-700">
-          <legend className="text-lg font-bold px-2 text-neutral-900 dark:text-neutral-100">
-            👁️ Sensory & Vision Preferences
-          </legend>
-          <div className="flex flex-wrap gap-3 mt-4">
-            {[
-              { id: 'high_contrast', label: 'High Contrast Mode' },
-              { id: 'large_text', label: 'Large Text (130%)' },
-              { id: 'braille', label: 'Braille Signage' },
-              { id: 'screen_reader', label: 'Screen Reader Optimized' },
-            ].map((v) => (
-              <button
-                key={v.id}
-                type="button"
-                onClick={() => toggleNeed('vision_needs', v.id)}
-                aria-pressed={passport.vision_needs.includes(v.id)}
-                className={`min-h-[44px] px-4 py-2 rounded-lg text-sm font-bold border transition-colors cursor-pointer ${
-                  passport.vision_needs.includes(v.id)
-                    ? 'bg-purple-700 text-white border-purple-800'
-                    : 'bg-neutral-100 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-700'
-                }`}
-              >
-                {passport.vision_needs.includes(v.id) ? '✓ ' : '+ '}
-                {v.label}
-              </button>
-            ))}
-          </div>
-        </fieldset>
-
-        {/* Emergency Contacts */}
-        <section className="p-6 bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-300 dark:border-neutral-700">
-          <h2 className="text-lg font-bold mb-3 text-neutral-900 dark:text-neutral-100">
-            🚨 {t('passport.contacts')}
-          </h2>
-          <div className="flex flex-col gap-3">
-            {passport.emergency_contacts.map((c, idx) => (
-              <div
-                key={idx}
-                className="flex items-center justify-between p-3 rounded-lg bg-neutral-100 dark:bg-neutral-800"
-              >
+              <div className="grid grid-cols-1 gap-4">
                 <div>
-                  <span className="font-bold text-sm block">{c.name} ({c.relation})</span>
-                  <span className="text-xs text-neutral-500 font-mono">{c.phone}</span>
+                  <label htmlFor="mobility-needs" className="block text-sm font-semibold text-[var(--ink)] mb-1">
+                    {t('passport_ui.mobility_label')}
+                  </label>
+                  <input
+                    id="mobility-needs"
+                    type="text"
+                    value={passport.mobility_needs ?? ''}
+                    onChange={(e) =>
+                      setPassport((p) => ({ ...p, mobility_needs: e.target.value }))
+                    }
+                    placeholder={t('passport_ui.mobility_placeholder')}
+                    className="w-full min-h-[44px] px-3.5 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--ink)] text-sm placeholder:text-[var(--ink-muted)]"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="vision-needs" className="block text-sm font-semibold text-[var(--ink)] mb-1">
+                    {t('passport_ui.vision_label')}
+                  </label>
+                  <input
+                    id="vision-needs"
+                    type="text"
+                    value={passport.vision_needs ?? ''}
+                    onChange={(e) =>
+                      setPassport((p) => ({ ...p, vision_needs: e.target.value }))
+                    }
+                    placeholder={t('passport_ui.vision_placeholder')}
+                    className="w-full min-h-[44px] px-3.5 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--ink)] text-sm placeholder:text-[var(--ink-muted)]"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="hearing-needs" className="block text-sm font-semibold text-[var(--ink)] mb-1">
+                    {t('passport_ui.hearing_label')}
+                  </label>
+                  <input
+                    id="hearing-needs"
+                    type="text"
+                    value={passport.hearing_needs ?? ''}
+                    onChange={(e) =>
+                      setPassport((p) => ({ ...p, hearing_needs: e.target.value }))
+                    }
+                    placeholder={t('passport_ui.hearing_placeholder')}
+                    className="w-full min-h-[44px] px-3.5 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--ink)] text-sm placeholder:text-[var(--ink-muted)]"
+                  />
                 </div>
               </div>
-            ))}
-          </div>
-        </section>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="min-h-[48px] px-8 py-3 rounded-xl bg-blue-700 hover:bg-blue-800 text-white font-extrabold text-base shadow-lg cursor-pointer self-start disabled:opacity-50"
-        >
-          {loading ? 'Saving...' : t('passport.save')}
-        </button>
-      </form>
+              <div className="pt-3 border-t border-[var(--border)] space-y-3">
+                <h3 className="text-base font-bold text-[var(--ink)]">
+                  {t('passport_ui.preferences_heading')}
+                </h3>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
+                  <div>
+                    <label htmlFor="pref-font-size" className="block text-xs font-semibold text-[var(--ink)] mb-1">
+                      {t('passport_ui.font_size_label')}
+                    </label>
+                    <select
+                      id="pref-font-size"
+                      value={passport.font_size}
+                      onChange={(e) =>
+                        setPassport((p) => ({ ...p, font_size: e.target.value }))
+                      }
+                      className="w-full min-h-[44px] px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--ink)] text-sm"
+                    >
+                      <option value="normal">{t('captions_ui.size_normal')}</option>
+                      <option value="large">{t('captions_ui.size_large')}</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label htmlFor="pref-language" className="block text-xs font-semibold text-[var(--ink)] mb-1">
+                      {t('passport_ui.language_label')}
+                    </label>
+                    <select
+                      id="pref-language"
+                      value={passport.preferred_language}
+                      onChange={(e) =>
+                        setPassport((p) => ({
+                          ...p,
+                          preferred_language: e.target.value,
+                        }))
+                      }
+                      className="w-full min-h-[44px] px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--ink)] text-sm"
+                    >
+                      <option value="en">English</option>
+                      <option value="hi">हिन्दी (Hindi)</option>
+                      <option value="te">తెలుగు (Telugu)</option>
+                      <option value="ta">தமிழ் (Tamil)</option>
+                    </select>
+                  </div>
+
+                  <label className="min-h-[44px] px-3.5 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] flex items-center gap-2.5 text-sm font-semibold text-[var(--ink)] cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={passport.sensory_mode}
+                      onChange={(e) =>
+                        setPassport((p) => ({
+                          ...p,
+                          sensory_mode: e.target.checked,
+                        }))
+                      }
+                      className="w-4 h-4 accent-[var(--action)]"
+                    />
+                    <span>{t('passport_ui.sensory_label')}</span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-2">
+                <ActionButton type="submit" disabled={saving}>
+                  {saving ? (
+                    <Loader2 className="w-4 h-4 animate-spin shrink-0" aria-hidden="true" />
+                  ) : (
+                    <Save className="w-4 h-4 shrink-0" aria-hidden="true" />
+                  )}
+                  <span>{saving ? t('passport_ui.saving') : t('passport_ui.save_btn')}</span>
+                </ActionButton>
+              </div>
+            </form>
+          </Card>
+
+          <Card className="space-y-4">
+            <h2 className="text-lg font-bold text-[var(--ink)]">
+              {t('passport_ui.contacts_heading')}
+            </h2>
+
+            {contacts.length === 0 ? (
+              <StateMessage
+                kind="empty"
+                title={t('passport_ui.contacts_empty')}
+              />
+            ) : (
+              <ul className="space-y-2">
+                {contacts.map((c) => (
+                  <li
+                    key={c.id}
+                    className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-xl bg-[var(--surface-muted)] border border-[var(--border)]"
+                  >
+                    <div className="space-y-0.5">
+                      <p className="font-bold text-sm text-[var(--ink)]">{c.name}</p>
+                      <p className="inline-flex items-center gap-1.5 text-xs text-[var(--ink-muted)]">
+                        <Phone className="w-3.5 h-3.5 text-[var(--accent-text)]" aria-hidden="true" />
+                        <span>{c.phone}</span>
+                      </p>
+                    </div>
+
+                    <SecondaryButton
+                      type="button"
+                      onClick={() => void handleDeleteContact(c.id)}
+                      aria-label={t('passport_ui.delete_contact_aria', { name: c.name })}
+                      className="px-3 py-2 text-xs text-[var(--danger-ink)]"
+                    >
+                      <Trash2 className="w-4 h-4 shrink-0" aria-hidden="true" />
+                    </SecondaryButton>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            <form
+              onSubmit={handleAddContact}
+              noValidate
+              className="pt-3 border-t border-[var(--border)] flex flex-col gap-3"
+            >
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label htmlFor="contact-name" className="block text-xs font-semibold text-[var(--ink)] mb-1">
+                    {t('passport_ui.contact_name')}
+                  </label>
+                  <input
+                    id="contact-name"
+                    type="text"
+                    value={contactName}
+                    onChange={(e) => {
+                      setContactName(e.target.value)
+                      if (contactError) setContactError(null)
+                    }}
+                    className="w-full min-h-[44px] px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--ink)] text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="contact-phone" className="block text-xs font-semibold text-[var(--ink)] mb-1">
+                    {t('passport_ui.contact_phone')}
+                  </label>
+                  <input
+                    id="contact-phone"
+                    type="tel"
+                    value={contactPhone}
+                    onChange={(e) => {
+                      setContactPhone(e.target.value)
+                      if (contactError) setContactError(null)
+                    }}
+                    className="w-full min-h-[44px] px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--ink)] text-sm"
+                  />
+                </div>
+              </div>
+
+              {contactError && (
+                <p
+                  role="alert"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--danger-ink)]"
+                >
+                  <AlertCircle className="w-4 h-4 shrink-0" aria-hidden="true" />
+                  <span>{contactError}</span>
+                </p>
+              )}
+
+              <div>
+                <ActionButton type="submit" disabled={addingContact}>
+                  <Plus className="w-4 h-4 shrink-0" aria-hidden="true" />
+                  <span>{t('passport_ui.add_contact_btn')}</span>
+                </ActionButton>
+              </div>
+            </form>
+          </Card>
+        </>
+      )}
+
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   )
 }
