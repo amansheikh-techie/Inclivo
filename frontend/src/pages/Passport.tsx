@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { api, type PassportData } from '../lib/api'
+import { api, type PassportData, type EmergencyContact } from '../lib/api'
 import { supabase } from '../lib/supabase'
 import { Toast } from '../components/Toast'
 
@@ -10,16 +10,17 @@ export function Passport() {
   const [emailInput, setEmailInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
+  const [contacts, setContacts] = useState<EmergencyContact[]>([])
+  const [newName, setNewName] = useState('')
+  const [newPhone, setNewPhone] = useState('')
 
   const [passport, setPassport] = useState<PassportData>({
-    mobility_needs: ['ramp'],
-    vision_needs: [],
-    hearing_needs: [],
+    mobility_needs: null,
+    vision_needs: null,
+    hearing_needs: null,
     preferred_language: 'en',
-    font_size: 'normal',
-    emergency_contacts: [
-      { name: 'Primary Emergency Contact', phone: '+91 9876543210', relation: 'Family' },
-    ],
+    font_size: 'medium',
+    sensory_mode: false,
   })
 
   useEffect(() => {
@@ -28,10 +29,8 @@ export function Passport() {
         setSessionUser(data.session.user.email || 'Authenticated User')
       }
     })
-
-    api.getPassport().then((data) => {
-      if (data) setPassport(data)
-    })
+    api.getPassport().then((data) => { if (data) setPassport(data) })
+    api.getContacts().then((data) => setContacts(data)).catch(() => {})
   }, [])
 
   const handleEmailLogin = async (e: React.FormEvent) => {
@@ -41,7 +40,6 @@ export function Passport() {
     try {
       const { error } = await supabase.auth.signInWithOtp({ email: emailInput })
       if (error) {
-        // Fallback for demo when Supabase credentials aren't configured yet
         setSessionUser(emailInput)
         setToastMessage(`Signed in as demo user (${emailInput})`)
       } else {
@@ -67,13 +65,26 @@ export function Passport() {
     }
   }
 
-  const toggleNeed = (category: 'mobility_needs' | 'vision_needs' | 'hearing_needs', item: string) => {
-    setPassport((prev) => ({
-      ...prev,
-      [category]: prev[category].includes(item)
-        ? prev[category].filter((x) => x !== item)
-        : [...prev[category], item],
-    }))
+  const handleAddContact = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newName || !newPhone) return
+    try {
+      const created = await api.addContact({ name: newName, phone: newPhone })
+      setContacts((prev) => [...prev, created])
+      setNewName('')
+      setNewPhone('')
+    } catch {
+      setToastMessage('Could not add contact. Please sign in first.')
+    }
+  }
+
+  const handleDeleteContact = async (id: string) => {
+    try {
+      await api.deleteContact(id)
+      setContacts((prev) => prev.filter((c) => c.id !== id))
+    } catch {
+      setToastMessage('Could not delete contact.')
+    }
   }
 
   return (
@@ -102,9 +113,7 @@ export function Passport() {
 
         {!sessionUser && (
           <form onSubmit={handleEmailLogin} className="flex items-center gap-2">
-            <label htmlFor="auth-email" className="sr-only">
-              Email Address
-            </label>
+            <label htmlFor="auth-email" className="sr-only">Email Address</label>
             <input
               id="auth-email"
               type="email"
@@ -132,80 +141,86 @@ export function Passport() {
           <legend className="text-lg font-bold px-2 text-neutral-900 dark:text-neutral-100">
             ♿ Mobility Preferences
           </legend>
-          <div className="flex flex-wrap gap-3 mt-4">
-            {[
-              { id: 'ramp', label: 'Ramp Access Required' },
-              { id: 'elevator', label: 'Elevators Only' },
-              { id: 'step_free', label: 'Step-Free Paths' },
-              { id: 'wide_doors', label: 'Wide Doorways (≥ 90cm)' },
-            ].map((m) => (
-              <button
-                key={m.id}
-                type="button"
-                onClick={() => toggleNeed('mobility_needs', m.id)}
-                aria-pressed={passport.mobility_needs.includes(m.id)}
-                className={`min-h-[44px] px-4 py-2 rounded-lg text-sm font-bold border transition-colors cursor-pointer ${
-                  passport.mobility_needs.includes(m.id)
-                    ? 'bg-blue-700 text-white border-blue-800'
-                    : 'bg-neutral-100 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-700'
-                }`}
-              >
-                {passport.mobility_needs.includes(m.id) ? '✓ ' : '+ '}
-                {m.label}
-              </button>
-            ))}
-          </div>
+          <textarea
+            aria-label="Mobility needs description"
+            rows={2}
+            value={passport.mobility_needs || ''}
+            onChange={(e) => setPassport((p) => ({ ...p, mobility_needs: e.target.value || null }))}
+            placeholder="e.g. wheelchair, ramp access, step-free paths"
+            className="mt-4 w-full px-3 py-2 rounded-lg border bg-neutral-50 dark:bg-neutral-800 text-sm"
+          />
         </fieldset>
 
-        {/* Sensory & Vision Needs */}
+        {/* Vision Needs */}
         <fieldset className="p-6 bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-300 dark:border-neutral-700">
           <legend className="text-lg font-bold px-2 text-neutral-900 dark:text-neutral-100">
-            👁️ Sensory & Vision Preferences
+            👁️ Vision Preferences
           </legend>
-          <div className="flex flex-wrap gap-3 mt-4">
-            {[
-              { id: 'high_contrast', label: 'High Contrast Mode' },
-              { id: 'large_text', label: 'Large Text (130%)' },
-              { id: 'braille', label: 'Braille Signage' },
-              { id: 'screen_reader', label: 'Screen Reader Optimized' },
-            ].map((v) => (
-              <button
-                key={v.id}
-                type="button"
-                onClick={() => toggleNeed('vision_needs', v.id)}
-                aria-pressed={passport.vision_needs.includes(v.id)}
-                className={`min-h-[44px] px-4 py-2 rounded-lg text-sm font-bold border transition-colors cursor-pointer ${
-                  passport.vision_needs.includes(v.id)
-                    ? 'bg-purple-700 text-white border-purple-800'
-                    : 'bg-neutral-100 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-700'
-                }`}
-              >
-                {passport.vision_needs.includes(v.id) ? '✓ ' : '+ '}
-                {v.label}
-              </button>
-            ))}
-          </div>
+          <textarea
+            aria-label="Vision needs description"
+            rows={2}
+            value={passport.vision_needs || ''}
+            onChange={(e) => setPassport((p) => ({ ...p, vision_needs: e.target.value || null }))}
+            placeholder="e.g. screen reader, high contrast, large text"
+            className="mt-4 w-full px-3 py-2 rounded-lg border bg-neutral-50 dark:bg-neutral-800 text-sm"
+          />
         </fieldset>
 
-        {/* Emergency Contacts */}
-        <section className="p-6 bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-300 dark:border-neutral-700">
-          <h2 className="text-lg font-bold mb-3 text-neutral-900 dark:text-neutral-100">
-            🚨 {t('passport.contacts')}
-          </h2>
-          <div className="flex flex-col gap-3">
-            {passport.emergency_contacts.map((c, idx) => (
-              <div
-                key={idx}
-                className="flex items-center justify-between p-3 rounded-lg bg-neutral-100 dark:bg-neutral-800"
-              >
-                <div>
-                  <span className="font-bold text-sm block">{c.name} ({c.relation})</span>
-                  <span className="text-xs text-neutral-500 font-mono">{c.phone}</span>
-                </div>
-              </div>
-            ))}
+        {/* Hearing Needs */}
+        <fieldset className="p-6 bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-300 dark:border-neutral-700">
+          <legend className="text-lg font-bold px-2 text-neutral-900 dark:text-neutral-100">
+            🦻 Hearing Preferences
+          </legend>
+          <textarea
+            aria-label="Hearing needs description"
+            rows={2}
+            value={passport.hearing_needs || ''}
+            onChange={(e) => setPassport((p) => ({ ...p, hearing_needs: e.target.value || null }))}
+            placeholder="e.g. captions, visual alerts, induction loop"
+            className="mt-4 w-full px-3 py-2 rounded-lg border bg-neutral-50 dark:bg-neutral-800 text-sm"
+          />
+        </fieldset>
+
+        {/* Display Settings */}
+        <fieldset className="p-6 bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-300 dark:border-neutral-700 flex flex-col gap-4">
+          <legend className="text-lg font-bold px-2 text-neutral-900 dark:text-neutral-100">
+            ⚙️ Display Settings
+          </legend>
+          <div className="flex items-center gap-4 flex-wrap">
+            <label htmlFor="font-size" className="text-sm font-semibold">Font Size:</label>
+            <select
+              id="font-size"
+              value={passport.font_size}
+              onChange={(e) => setPassport((p) => ({ ...p, font_size: e.target.value }))}
+              className="min-h-[44px] px-3 py-2 rounded-lg border bg-white dark:bg-neutral-800 text-sm"
+            >
+              <option value="small">Small</option>
+              <option value="medium">Medium</option>
+              <option value="large">Large</option>
+            </select>
+            <label htmlFor="lang-select" className="text-sm font-semibold">Language:</label>
+            <select
+              id="lang-select"
+              value={passport.preferred_language}
+              onChange={(e) => setPassport((p) => ({ ...p, preferred_language: e.target.value }))}
+              className="min-h-[44px] px-3 py-2 rounded-lg border bg-white dark:bg-neutral-800 text-sm"
+            >
+              <option value="en">English</option>
+              <option value="hi">हिन्दी</option>
+              <option value="te">తెలుగు</option>
+              <option value="ta">தமிழ்</option>
+            </select>
+            <label className="flex items-center gap-2 text-sm font-semibold cursor-pointer">
+              <input
+                type="checkbox"
+                checked={passport.sensory_mode}
+                onChange={(e) => setPassport((p) => ({ ...p, sensory_mode: e.target.checked }))}
+                className="w-5 h-5"
+              />
+              Sensory-Friendly Mode
+            </label>
           </div>
-        </section>
+        </fieldset>
 
         <button
           type="submit"
@@ -215,6 +230,61 @@ export function Passport() {
           {loading ? 'Saving...' : t('passport.save')}
         </button>
       </form>
+
+      {/* Emergency Contacts */}
+      <section className="p-6 bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-300 dark:border-neutral-700">
+        <h2 className="text-lg font-bold mb-3 text-neutral-900 dark:text-neutral-100">
+          🚨 {t('passport.contacts')}
+        </h2>
+        <div className="flex flex-col gap-3 mb-4">
+          {contacts.map((c) => (
+            <div
+              key={c.id}
+              className="flex items-center justify-between p-3 rounded-lg bg-neutral-100 dark:bg-neutral-800"
+            >
+              <div>
+                <span className="font-bold text-sm block">{c.name}</span>
+                <span className="text-xs text-neutral-500 font-mono">{c.phone}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleDeleteContact(c.id)}
+                className="text-red-600 font-bold text-xs px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-950 cursor-pointer"
+                aria-label={`Remove ${c.name}`}
+              >
+                Remove
+              </button>
+            </div>
+          ))}
+          {contacts.length === 0 && (
+            <p className="text-sm text-neutral-500">No emergency contacts added yet.</p>
+          )}
+        </div>
+        <form onSubmit={handleAddContact} className="flex flex-wrap gap-2">
+          <input
+            type="text"
+            placeholder="Contact name"
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            required
+            className="min-h-[44px] px-3 py-2 rounded-lg border bg-neutral-50 dark:bg-neutral-800 text-sm flex-1 min-w-[140px]"
+          />
+          <input
+            type="tel"
+            placeholder="+91 XXXXX XXXXX"
+            value={newPhone}
+            onChange={(e) => setNewPhone(e.target.value)}
+            required
+            className="min-h-[44px] px-3 py-2 rounded-lg border bg-neutral-50 dark:bg-neutral-800 text-sm flex-1 min-w-[140px]"
+          />
+          <button
+            type="submit"
+            className="min-h-[44px] px-4 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm cursor-pointer"
+          >
+            + Add
+          </button>
+        </form>
+      </section>
     </div>
   )
 }

@@ -32,7 +32,7 @@ export function Schemes() {
       const res = await api.simplifyText(scheme.eligibility + ' ' + scheme.benefits, i18n.language)
       setSimplifiedTexts((prev) => ({ ...prev, [scheme.id]: res.simplified }))
     } catch {
-      setSimplifiedTexts((prev) => ({ ...prev, [scheme.id]: scheme.simplified }))
+      setSimplifiedTexts((prev) => ({ ...prev, [scheme.id]: scheme.benefits || scheme.eligibility || '' }))
     } finally {
       setSimplifyingId(null)
     }
@@ -48,7 +48,7 @@ export function Schemes() {
         state: checkerState,
         income_range: checkerIncome,
       })
-      setSchemes(matched)
+      setSchemes(matched.map((m) => m.scheme))
       setShowChecker(false)
     } finally {
       setCheckerLoading(false)

@@ -26,8 +26,8 @@ export function Places() {
   }, [])
 
   const filteredPlaces = places.filter((p) => {
-    if (filterRamp && !p.ramp) return false
-    if (filterElevator && !p.elevator) return false
+    if (filterRamp && !p.has_ramp) return false
+    if (filterElevator && !p.has_elevator) return false
     if (filterParking && !p.accessible_parking) return false
     if (filterWheelchair && !p.wheelchair_friendly) return false
     if (filterQuiet && !p.quiet) return false
@@ -39,7 +39,7 @@ export function Places() {
     lat: p.lat,
     lng: p.lng,
     title: p.name,
-    subtitle: `${p.category} • Score: ${p.score}/100`,
+    subtitle: `${p.category} • Score: ${p.accessibility_score}/100`,
     badge: p.wheelchair_friendly ? '♿ Accessible' : undefined,
   }))
 
