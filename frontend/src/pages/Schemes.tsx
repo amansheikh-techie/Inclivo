@@ -1,338 +1,364 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { api, type Scheme } from '../lib/api'
+import {
+  AlertCircle,
+  CheckCircle2,
+  Filter,
+  Loader2,
+  RotateCcw,
+  Search,
+  SlidersHorizontal,
+} from 'lucide-react'
+import { api, useDemoData, type MatchedScheme, type Scheme } from '../lib/api'
+import { SchemeCard } from '../components/SchemeCard'
+import {
+  ActionButton,
+  Card,
+  DemoBanner,
+  SecondaryButton,
+  StateMessage,
+} from '../components/ui'
 
 export function Schemes() {
   const { t, i18n } = useTranslation()
-  const [schemes, setSchemes] = useState<Scheme[]>([])
-  const [loading, setLoading] = useState(true)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [selectedDisability, setSelectedDisability] = useState('all')
-  const [selectedState, setSelectedState] = useState('All')
-  const [simplifiedTexts, setSimplifiedTexts] = useState<Record<string, string>>({})
-  const [simplifyingId, setSimplifyingId] = useState<string | null>(null)
+  const isDemo = useDemoData()
 
-  // Eligibility Checker State
-  const [showChecker, setShowChecker] = useState(false)
-  const [checkerDisability, setCheckerDisability] = useState('locomotor')
-  const [checkerAge, setCheckerAge] = useState(25)
-  const [checkerState, setCheckerState] = useState('Telangana')
-  const [checkerIncome, setCheckerIncome] = useState('under_2_lakh')
-  const [checkerLoading, setCheckerLoading] = useState(false)
+  const [schemes, setSchemes] = useState<Scheme[]>([])
+  const [matchedSchemes, setMatchedSchemes] = useState<MatchedScheme[] | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
+
+  const [searchQuery, setSearchQuery] = useState('')
+  const [disabilityFilter, setDisabilityFilter] = useState('')
+  const [stateFilter, setStateFilter] = useState('')
+
+  const [checkerOpen, setCheckerOpen] = useState(false)
+  const [age, setAge] = useState('')
+  const [income, setIncome] = useState('')
+  const [checkerState, setCheckerState] = useState('')
+  const [checkerDisability, setCheckerDisability] = useState('visual')
+  const [checkerError, setCheckerError] = useState<string | null>(null)
+  const [checking, setChecking] = useState(false)
 
   useEffect(() => {
-    api.getSchemes()
-      .then((data) => setSchemes(data))
-      .finally(() => setLoading(false))
+    let active = true
+    api
+      .getSchemes()
+      .then((data) => {
+        if (active) setSchemes(data)
+      })
+      .catch(() => {
+        if (active) setError(true)
+      })
+      .finally(() => {
+        if (active) setLoading(false)
+      })
+    return () => {
+      active = false
+    }
   }, [])
 
-  const handleSimplify = async (scheme: Scheme) => {
-    setSimplifyingId(scheme.id)
-    try {
-      const res = await api.simplifyText(scheme.eligibility + ' ' + scheme.benefits, i18n.language)
-      setSimplifiedTexts((prev) => ({ ...prev, [scheme.id]: res.simplified }))
-    } catch {
-      setSimplifiedTexts((prev) => ({ ...prev, [scheme.id]: scheme.benefits || scheme.eligibility || '' }))
-    } finally {
-      setSimplifyingId(null)
-    }
+  const handleRetry = () => {
+    setLoading(true)
+    setError(false)
+    api
+      .getSchemes()
+      .then((data) => setSchemes(data))
+      .catch(() => setError(true))
+      .finally(() => setLoading(false))
   }
 
-  const handleRunEligibilityChecker = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setCheckerLoading(true)
-    try {
-      const matched = await api.matchSchemes({
-        disability_type: checkerDisability,
-        age: checkerAge,
-        state: checkerState,
-        income_range: checkerIncome,
-      })
-      setSchemes(matched.map((m) => m.scheme))
-      setShowChecker(false)
-    } finally {
-      setCheckerLoading(false)
+  const uniqueDisabilities = Array.from(
+    new Set(schemes.map((s) => s.disability_type).filter(Boolean) as string[]),
+  )
+  const uniqueStates = Array.from(
+    new Set(schemes.map((s) => s.state).filter(Boolean) as string[]),
+  )
+
+  const displayItems: { scheme: Scheme; reason?: string }[] = matchedSchemes
+    ? matchedSchemes.map((m) => ({ scheme: m.scheme, reason: m.reason }))
+    : schemes.map((scheme) => ({ scheme }))
+
+  const filteredItems = displayItems.filter(({ scheme }) => {
+    const q = searchQuery.trim().toLowerCase()
+    if (q) {
+      const haystack = `${scheme.display_name} ${scheme.name} ${scheme.benefits ?? ''} ${scheme.eligibility ?? ''}`.toLowerCase()
+      if (!haystack.includes(q)) return false
     }
-  }
-
-  const filteredSchemes = schemes.filter((s) => {
-    const matchesSearch =
-      s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (s.eligibility ?? '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (s.benefits ?? '').toLowerCase().includes(searchQuery.toLowerCase())
-
-    const matchesDisability =
-      selectedDisability === 'all' || s.disability_type === 'all' || s.disability_type === selectedDisability
-
-    const matchesState =
-      selectedState === 'All' || s.state === 'All India' || s.state === selectedState
-
-    return matchesSearch && matchesDisability && matchesState
+    if (disabilityFilter && scheme.disability_type !== disabilityFilter) return false
+    if (stateFilter && scheme.state !== stateFilter) return false
+    return true
   })
 
+  const hasFilters = Boolean(searchQuery || disabilityFilter || stateFilter)
+
+  const clearFilters = () => {
+    setSearchQuery('')
+    setDisabilityFilter('')
+    setStateFilter('')
+  }
+
+  const handleCheckEligibility = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const numAge = Number(age)
+    const numIncome = Number(income)
+    if (!age.trim() || Number.isNaN(numAge) || numAge < 0 || numAge > 120) {
+      setCheckerError(t('schemes_ui.validation_age'))
+      return
+    }
+    if (!income.trim() || Number.isNaN(numIncome) || numIncome < 0) {
+      setCheckerError(t('schemes_ui.validation_income'))
+      return
+    }
+    setCheckerError(null)
+    setChecking(true)
+    try {
+      const results = await api.matchSchemes({
+        age: numAge,
+        income_range: String(numIncome),
+        state: checkerState.trim() || 'Central',
+        disability_type: checkerDisability,
+        lang: i18n.language,
+      })
+      setMatchedSchemes(results)
+    } catch {
+      setCheckerError(t('states.error_title'))
+    } finally {
+      setChecking(false)
+    }
+  }
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-8">
-      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="flex flex-col gap-6">
+      {isDemo && <DemoBanner />}
+
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black text-neutral-900 dark:text-neutral-100">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--ink)]">
             {t('schemes.title')}
           </h1>
-          <p className="text-neutral-600 dark:text-neutral-400 text-sm mt-1">
+          <p className="text-sm sm:text-base text-[var(--ink-muted)] mt-1">
             {t('schemes.subtitle')}
           </p>
         </div>
 
-        <button
+        <ActionButton
           type="button"
-          onClick={() => setShowChecker(!showChecker)}
-          className="min-h-[44px] px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm cursor-pointer shadow-md flex items-center gap-2"
+          onClick={() => setCheckerOpen((v) => !v)}
+          aria-expanded={checkerOpen}
         >
-          <span>📋</span>
-          <span>{showChecker ? 'Hide Checker' : t('schemes.eligibility_checker')}</span>
-        </button>
+          <SlidersHorizontal className="w-4 h-4 shrink-0" aria-hidden="true" />
+          <span>{t('schemes.eligibility_checker')}</span>
+        </ActionButton>
       </header>
 
-      {/* Quick Eligibility Checker Modal / Drawer */}
-      {showChecker && (
-        <section
-          aria-label="Eligibility Questionaire"
-          className="p-6 bg-emerald-50 dark:bg-emerald-950/40 rounded-2xl border-2 border-emerald-500 shadow-lg flex flex-col gap-4"
-        >
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-emerald-950 dark:text-emerald-100 flex items-center gap-2">
-              <span>🎯</span>
-              <span>{t('schemes.eligibility_checker')}</span>
+      {checkerOpen && (
+        <Card>
+          <form
+            onSubmit={handleCheckEligibility}
+            noValidate
+            className="flex flex-col gap-4"
+          >
+            <h2 className="text-lg font-bold text-[var(--ink)]">
+              {t('schemes.eligibility_checker')}
             </h2>
-            <button
-              type="button"
-              onClick={() => setShowChecker(false)}
-              className="text-emerald-900 dark:text-emerald-200 font-bold p-1 cursor-pointer"
-            >
-              ✕
-            </button>
-          </div>
 
-          <form onSubmit={handleRunEligibilityChecker} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-            <div>
-              <label htmlFor="chk-disability" className="block text-xs font-bold uppercase mb-1">
-                {t('schemes.filter_disability')}
-              </label>
-              <select
-                id="chk-disability"
-                value={checkerDisability}
-                onChange={(e) => setCheckerDisability(e.target.value)}
-                className="w-full min-h-[44px] px-3 py-2 rounded-lg border bg-white dark:bg-neutral-900 text-sm font-semibold"
-              >
-                <option value="locomotor">Locomotor / Physical</option>
-                <option value="vision">Visual Impairment</option>
-                <option value="hearing">Hearing Impairment</option>
-                <option value="intellectual">Intellectual Disability</option>
-              </select>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <div>
+                <label htmlFor="checker-age" className="block text-xs font-semibold text-[var(--ink)] mb-1">
+                  {t('schemes.age')}
+                </label>
+                <input
+                  id="checker-age"
+                  type="number"
+                  min={0}
+                  max={120}
+                  value={age}
+                  onChange={(e) => setAge(e.target.value)}
+                  placeholder={t('schemes_ui.age_placeholder')}
+                  className="w-full min-h-[44px] px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--ink)] text-sm"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="checker-income" className="block text-xs font-semibold text-[var(--ink)] mb-1">
+                  {t('schemes.income')}
+                </label>
+                <input
+                  id="checker-income"
+                  type="number"
+                  min={0}
+                  value={income}
+                  onChange={(e) => setIncome(e.target.value)}
+                  placeholder={t('schemes_ui.income_placeholder')}
+                  className="w-full min-h-[44px] px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--ink)] text-sm"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="checker-state" className="block text-xs font-semibold text-[var(--ink)] mb-1">
+                  {t('schemes.state')}
+                </label>
+                <input
+                  id="checker-state"
+                  type="text"
+                  value={checkerState}
+                  onChange={(e) => setCheckerState(e.target.value)}
+                  placeholder={t('schemes_ui.state_placeholder')}
+                  className="w-full min-h-[44px] px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--ink)] text-sm"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="checker-disability" className="block text-xs font-semibold text-[var(--ink)] mb-1">
+                  {t('schemes.filter_disability')}
+                </label>
+                <select
+                  id="checker-disability"
+                  value={checkerDisability}
+                  onChange={(e) => setCheckerDisability(e.target.value)}
+                  className="w-full min-h-[44px] px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--ink)] text-sm"
+                >
+                  <option value="visual">{t('schemes_ui.disability_visual')}</option>
+                  <option value="hearing">{t('schemes_ui.disability_hearing')}</option>
+                  <option value="mobility">{t('schemes_ui.disability_mobility')}</option>
+                  <option value="cognitive">{t('schemes_ui.disability_cognitive')}</option>
+                  <option value="all">{t('schemes_ui.disability_all')}</option>
+                </select>
+              </div>
             </div>
 
-            <div>
-              <label htmlFor="chk-age" className="block text-xs font-bold uppercase mb-1">
-                {t('schemes.age')}
-              </label>
-              <input
-                id="chk-age"
-                type="number"
-                min="1"
-                max="100"
-                value={checkerAge}
-                onChange={(e) => setCheckerAge(Number(e.target.value))}
-                className="w-full min-h-[44px] px-3 py-2 rounded-lg border bg-white dark:bg-neutral-900 text-sm font-semibold"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="chk-state" className="block text-xs font-bold uppercase mb-1">
-                {t('schemes.state')}
-              </label>
-              <select
-                id="chk-state"
-                value={checkerState}
-                onChange={(e) => setCheckerState(e.target.value)}
-                className="w-full min-h-[44px] px-3 py-2 rounded-lg border bg-white dark:bg-neutral-900 text-sm font-semibold"
+            {checkerError && (
+              <p
+                role="alert"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-700 dark:text-red-400"
               >
-                <option value="Telangana">Telangana</option>
-                <option value="Andhra Pradesh">Andhra Pradesh</option>
-                <option value="Karnataka">Karnataka</option>
-                <option value="Tamil Nadu">Tamil Nadu</option>
-                <option value="Maharashtra">Maharashtra</option>
-                <option value="Delhi">Delhi</option>
-              </select>
-            </div>
+                <AlertCircle className="w-4 h-4 shrink-0" aria-hidden="true" />
+                <span>{checkerError}</span>
+              </p>
+            )}
 
-            <div>
-              <label htmlFor="chk-income" className="block text-xs font-bold uppercase mb-1">
-                {t('schemes.income')}
-              </label>
-              <select
-                id="chk-income"
-                value={checkerIncome}
-                onChange={(e) => setCheckerIncome(e.target.value)}
-                className="w-full min-h-[44px] px-3 py-2 rounded-lg border bg-white dark:bg-neutral-900 text-sm font-semibold"
-              >
-                <option value="under_1_lakh">Below ₹1,00,000</option>
-                <option value="under_2_lakh">₹1,00,000 - ₹2,50,000</option>
-                <option value="above_2_lakh">Above ₹2,50,000</option>
-              </select>
-            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <ActionButton type="submit" disabled={checking}>
+                {checking ? (
+                  <Loader2 className="w-4 h-4 animate-spin shrink-0" aria-hidden="true" />
+                ) : (
+                  <CheckCircle2 className="w-4 h-4 shrink-0" aria-hidden="true" />
+                )}
+                <span>{checking ? t('schemes_ui.checking') : t('schemes.check_btn')}</span>
+              </ActionButton>
 
-            <div className="sm:col-span-2 md:col-span-4 flex justify-end">
-              <button
-                type="submit"
-                disabled={checkerLoading}
-                className="min-h-[44px] px-6 py-2.5 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-sm cursor-pointer shadow disabled:opacity-50"
-              >
-                {checkerLoading ? 'Matching...' : t('schemes.check_btn')}
-              </button>
+              {matchedSchemes && (
+                <SecondaryButton
+                  type="button"
+                  onClick={() => setMatchedSchemes(null)}
+                >
+                  <RotateCcw className="w-4 h-4 shrink-0" aria-hidden="true" />
+                  <span>{t('schemes_ui.clear_matches')}</span>
+                </SecondaryButton>
+              )}
             </div>
           </form>
-        </section>
+        </Card>
       )}
 
-      {/* Search & Filter Controls */}
-      <section
-        aria-label="Filter welfare schemes"
-        className="flex flex-wrap items-center gap-3 p-4 bg-neutral-100 dark:bg-neutral-800 rounded-xl border border-neutral-300 dark:border-neutral-700"
-      >
-        <div className="flex-1 min-w-[240px]">
-          <label htmlFor="search-schemes" className="sr-only">
-            Search Schemes
-          </label>
+      {matchedSchemes && (
+        <div
+          role="status"
+          className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-sm"
+        >
+          <span className="text-sm font-semibold text-[var(--ink)] inline-flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-[var(--accent-text)] shrink-0" aria-hidden="true" />
+            <span>{t('schemes_ui.matched_banner', { count: matchedSchemes.length })}</span>
+          </span>
+          <SecondaryButton
+            type="button"
+            onClick={() => setMatchedSchemes(null)}
+            className="text-xs px-3 py-2"
+          >
+            {t('schemes_ui.clear_matches')}
+          </SecondaryButton>
+        </div>
+      )}
+
+      <Card className="p-4 flex flex-col md:flex-row items-stretch md:items-center gap-3">
+        <div className="relative flex-1">
+          <Search
+            className="w-4 h-4 text-[var(--ink-muted)] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
+            aria-hidden="true"
+          />
           <input
-            id="search-schemes"
             type="search"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={t('schemes.search_placeholder')}
-            className="w-full min-h-[44px] px-4 py-2 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900 text-sm font-medium"
+            aria-label={t('schemes.search_placeholder')}
+            className="w-full min-h-[44px] pl-10 pr-4 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--ink)] text-sm placeholder:text-[var(--ink-muted)]"
           />
         </div>
 
-        <div className="flex items-center gap-2">
-          <label htmlFor="filter-disability-select" className="text-sm font-semibold">
-            {t('schemes.filter_disability')}:
-          </label>
+        <div className="flex flex-wrap items-center gap-2">
+          <Filter className="w-4 h-4 text-[var(--accent-text)] shrink-0 hidden sm:block" aria-hidden="true" />
+
           <select
-            id="filter-disability-select"
-            value={selectedDisability}
-            onChange={(e) => setSelectedDisability(e.target.value)}
-            className="min-h-[44px] px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900 text-sm font-semibold"
+            aria-label={t('schemes.filter_disability')}
+            value={disabilityFilter}
+            onChange={(e) => setDisabilityFilter(e.target.value)}
+            className="min-h-[44px] px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--ink)] text-sm font-medium"
           >
-            <option value="all">All Disabilities</option>
-            <option value="locomotor">Locomotor</option>
-            <option value="vision">Vision</option>
-            <option value="hearing">Hearing</option>
-          </select>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <label htmlFor="filter-state" className="text-sm font-semibold">
-            {t('schemes.state')}:
-          </label>
-          <select
-            id="filter-state"
-            value={selectedState}
-            onChange={(e) => setSelectedState(e.target.value)}
-            className="min-h-[44px] px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900 text-sm font-semibold"
-          >
-            <option value="All">All Regions</option>
-            <option value="All India">National / Central</option>
-            <option value="Telangana">Telangana</option>
-          </select>
-        </div>
-      </section>
-
-      {/* Schemes Grid */}
-      <section aria-labelledby="schemes-list-heading" className="flex flex-col gap-4">
-        <h2 id="schemes-list-heading" className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
-          Available Schemes ({filteredSchemes.length})
-        </h2>
-
-        {loading ? (
-          <div className="p-8 text-center text-sm text-neutral-500 animate-pulse">
-            Loading government welfare schemes...
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {filteredSchemes.map((s) => (
-              <article
-                key={s.id}
-                className="p-6 bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-2xl shadow-sm flex flex-col justify-between gap-4"
-              >
-                <div>
-                  <div className="flex items-start justify-between gap-3">
-                    <h3 className="text-xl font-bold text-neutral-900 dark:text-neutral-100">
-                      {s.name}
-                    </h3>
-                    <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-900 border border-emerald-300 whitespace-nowrap">
-                      🏛️ {s.state}
-                    </span>
-                  </div>
-
-                  <div className="mt-3 flex flex-col gap-2 text-sm">
-                    <div>
-                      <strong className="text-neutral-700 dark:text-neutral-300">
-                        Eligibility:
-                      </strong>{' '}
-                      <span className="text-neutral-600 dark:text-neutral-400">
-                        {s.eligibility}
-                      </span>
-                    </div>
-
-                    <div>
-                      <strong className="text-neutral-700 dark:text-neutral-300">
-                        Benefits:
-                      </strong>{' '}
-                      <span className="text-neutral-600 dark:text-neutral-400">
-                        {s.benefits}
-                      </span>
-                    </div>
-                  </div>
-
-                  {simplifiedTexts[s.id] && (
-                    <div
-                      role="region"
-                      aria-label="Simplified summary"
-                      className="mt-4 p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-700 rounded-lg text-sm text-amber-900 dark:text-amber-200"
-                    >
-                      <strong className="block text-xs uppercase tracking-wider mb-1">
-                        ✨ Simplified Explanation:
-                      </strong>
-                      {simplifiedTexts[s.id]}
-                    </div>
-                  )}
-                </div>
-
-                <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800 flex flex-wrap items-center justify-between gap-3">
-                  <button
-                    type="button"
-                    onClick={() => handleSimplify(s)}
-                    disabled={simplifyingId === s.id}
-                    className="min-h-[44px] px-4 py-2 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 font-bold text-xs text-neutral-800 dark:text-neutral-200 cursor-pointer disabled:opacity-50"
-                  >
-                    {simplifyingId === s.id ? 'Simplifying...' : t('schemes.simplify_btn')}
-                  </button>
-
-                  <a
-                    href={s.apply_url ?? '#'}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="min-h-[44px] px-5 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-emerald-500"
-                  >
-                    <span>{t('schemes.apply_now')}</span>
-                    <span aria-hidden="true">↗</span>
-                    <span className="sr-only">, opens official portal in a new tab</span>
-                  </a>
-                </div>
-              </article>
+            <option value="">{t('schemes_ui.all_disabilities')}</option>
+            {uniqueDisabilities.map((d) => (
+              <option key={d} value={d}>
+                {d}
+              </option>
             ))}
-          </div>
-        )}
-      </section>
+          </select>
+
+          <select
+            aria-label={t('schemes.state')}
+            value={stateFilter}
+            onChange={(e) => setStateFilter(e.target.value)}
+            className="min-h-[44px] px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--ink)] text-sm font-medium"
+          >
+            <option value="">{t('schemes_ui.all_states')}</option>
+            {uniqueStates.map((st) => (
+              <option key={st} value={st}>
+                {st}
+              </option>
+            ))}
+          </select>
+
+          {hasFilters && (
+            <SecondaryButton type="button" onClick={clearFilters} className="text-xs px-3 py-2">
+              <RotateCcw className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+              <span>{t('schemes_ui.clear_filters')}</span>
+            </SecondaryButton>
+          )}
+        </div>
+      </Card>
+
+      <div aria-live="polite" className="text-sm font-medium text-[var(--ink-muted)]">
+        {!loading && !error && t('schemes_ui.results_count', { count: filteredItems.length })}
+      </div>
+
+      {loading ? (
+        <StateMessage kind="loading" />
+      ) : error ? (
+        <StateMessage kind="error" onRetry={handleRetry} />
+      ) : filteredItems.length === 0 ? (
+        <StateMessage
+          kind="empty"
+          title={t('schemes_ui.empty_title')}
+          description={t('schemes_ui.empty_desc')}
+          onRetry={hasFilters ? clearFilters : handleRetry}
+        />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredItems.map(({ scheme, reason }) => (
+            <SchemeCard key={scheme.id} scheme={scheme} matchReason={reason} />
+          ))}
+        </div>
+      )}
     </div>
   )
 }
