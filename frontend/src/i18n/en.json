@@ -139,6 +139,26 @@
     "demo_badge": "Demo data",
     "demo_desc": "Showing offline sample data because the backend API is unreachable."
   },
+  "finder": {
+    "locating": "Locating...",
+    "view_map": "Map view",
+    "view_list": "List view",
+    "selected_location": "Selected location",
+    "select_pin_hint": "Select a map marker to inspect details, or use List view.",
+    "all_places": "All accessible places",
+    "all_washrooms": "Accessible washrooms",
+    "results_count": "{{count}} results",
+    "clear_filters": "Clear filters",
+    "filter_region": "Filter accessible amenities",
+    "score_breakdown": "Accessibility breakdown",
+    "distance_away": "{{km}} km away",
+    "verified_only": "Verified only",
+    "sort_label": "Sort washrooms",
+    "no_rating": "Not rated yet",
+    "washrooms_empty": "No washrooms found matching your filters.",
+    "map_aria": "Interactive OpenStreetMap of accessible locations",
+    "address_unavailable": "Address details unavailable"
+  },
   "about": {
     "title": "About Inclivo",
     "tagline": "Bridging accessibility gaps through modern, voice-first, and sensory-aware technology.",

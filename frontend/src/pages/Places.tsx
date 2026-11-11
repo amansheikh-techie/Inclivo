@@ -1,29 +1,83 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { api, type Place } from '../lib/api'
+import {
+  Accessibility,
+  ArrowUpDown,
+  CircleParking,
+  LocateFixed,
+  RotateCcw,
+  TrendingUp,
+  VolumeX,
+} from 'lucide-react'
+import { api, useDemoData, type Place } from '../lib/api'
+import { useGeolocation } from '../hooks/useGeolocation'
 import { MapView } from '../components/MapView'
 import { PlaceCard } from '../components/PlaceCard'
-import { useGeolocation } from '../hooks/useGeolocation'
+import {
+  ActionButton,
+  Card,
+  DemoBanner,
+  FilterChip,
+  SecondaryButton,
+  StateMessage,
+  ViewModeToggle,
+} from '../components/ui'
 
 export function Places() {
   const { t } = useTranslation()
   const { coords, loading: geoLoading, getLocation } = useGeolocation()
+  const isDemo = useDemoData()
+
   const [places, setPlaces] = useState<Place[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null)
+  const [viewMode, setViewMode] = useState<'map' | 'list'>('map')
 
-  // Filters
   const [filterRamp, setFilterRamp] = useState(false)
   const [filterElevator, setFilterElevator] = useState(false)
   const [filterParking, setFilterParking] = useState(false)
   const [filterWheelchair, setFilterWheelchair] = useState(false)
   const [filterQuiet, setFilterQuiet] = useState(false)
 
-  useEffect(() => {
-    api.getPlaces()
+  const handleRetry = useCallback(() => {
+    setLoading(true)
+    setError(false)
+    api
+      .getPlaces()
       .then((data) => setPlaces(data))
+      .catch(() => setError(true))
       .finally(() => setLoading(false))
   }, [])
+
+  useEffect(() => {
+    let active = true
+    api
+      .getPlaces()
+      .then((data) => {
+        if (active) setPlaces(data)
+      })
+      .catch(() => {
+        if (active) setError(true)
+      })
+      .finally(() => {
+        if (active) setLoading(false)
+      })
+    return () => {
+      active = false
+    }
+  }, [])
+
+  const hasActiveFilters =
+    filterWheelchair || filterRamp || filterElevator || filterParking || filterQuiet
+
+  const clearFilters = () => {
+    setFilterWheelchair(false)
+    setFilterRamp(false)
+    setFilterElevator(false)
+    setFilterParking(false)
+    setFilterQuiet(false)
+  }
 
   const filteredPlaces = places.filter((p) => {
     if (filterRamp && !p.has_ramp) return false
@@ -34,155 +88,155 @@ export function Places() {
     return true
   })
 
+  const selectedPlace =
+    filteredPlaces.find((p) => p.id === selectedPlaceId) || filteredPlaces[0] || null
+
   const markers = filteredPlaces.map((p) => ({
     id: p.id,
     lat: p.lat,
     lng: p.lng,
     title: p.name,
-    subtitle: `${p.category} • Score: ${p.accessibility_score}/100`,
-    badge: p.wheelchair_friendly ? '♿ Accessible' : undefined,
+    subtitle: `${p.category} • ${t('places.accessibility_score')}: ${p.accessibility_score}/100`,
+    badge: p.wheelchair_friendly ? t('places.filter_wheelchair') : undefined,
   }))
 
-  const selectedPlace = places.find((p) => p.id === selectedPlaceId) || filteredPlaces[0]
-
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-6">
-      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="flex flex-col gap-6">
+      {isDemo && <DemoBanner />}
+
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black text-neutral-900 dark:text-neutral-100">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--ink)]">
             {t('places.title')}
           </h1>
-          <p className="text-neutral-600 dark:text-neutral-400 text-sm mt-1">
+          <p className="text-sm sm:text-base text-[var(--ink-muted)] mt-1">
             {t('places.subtitle')}
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={getLocation}
-          disabled={geoLoading}
-          className="min-h-[44px] px-5 py-2.5 rounded-xl bg-blue-700 hover:bg-blue-800 text-white font-bold text-sm flex items-center justify-center gap-2 cursor-pointer shadow-md disabled:opacity-50"
-        >
-          <span>🎯</span>
-          <span>{geoLoading ? 'Locating...' : t('places.near_me')}</span>
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <ActionButton
+            type="button"
+            onClick={getLocation}
+            disabled={geoLoading}
+          >
+            <LocateFixed className="w-4 h-4 shrink-0" aria-hidden="true" />
+            <span>{geoLoading ? t('finder.locating') : t('places.near_me')}</span>
+          </ActionButton>
+        </div>
       </header>
 
-      {/* Filter toolbar */}
+      {/* Filter & View Toggle Bar */}
       <section
-        aria-label="Filter accessible amenities"
-        className="flex flex-wrap items-center gap-2 p-3 bg-neutral-100 dark:bg-neutral-800 rounded-xl border border-neutral-300 dark:border-neutral-700"
+        aria-label={t('finder.filter_region')}
+        className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 p-3 sm:p-4 bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-sm"
       >
-        <button
-          type="button"
-          onClick={() => setFilterWheelchair(!filterWheelchair)}
-          aria-pressed={filterWheelchair}
-          className={`min-h-[44px] px-3.5 py-2 rounded-lg text-xs font-bold border transition-colors cursor-pointer flex items-center gap-1.5 ${
-            filterWheelchair
-              ? 'bg-blue-700 text-white border-blue-800'
-              : 'bg-white dark:bg-neutral-900 border-neutral-300 dark:border-neutral-600'
-          }`}
-        >
-          <span>♿</span>
-          <span>{t('places.filter_wheelchair')}</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setFilterRamp(!filterRamp)}
-          aria-pressed={filterRamp}
-          className={`min-h-[44px] px-3.5 py-2 rounded-lg text-xs font-bold border transition-colors cursor-pointer flex items-center gap-1.5 ${
-            filterRamp
-              ? 'bg-blue-700 text-white border-blue-800'
-              : 'bg-white dark:bg-neutral-900 border-neutral-300 dark:border-neutral-600'
-          }`}
-        >
-          <span>↗️</span>
-          <span>{t('places.filter_ramp')}</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setFilterElevator(!filterElevator)}
-          aria-pressed={filterElevator}
-          className={`min-h-[44px] px-3.5 py-2 rounded-lg text-xs font-bold border transition-colors cursor-pointer flex items-center gap-1.5 ${
-            filterElevator
-              ? 'bg-blue-700 text-white border-blue-800'
-              : 'bg-white dark:bg-neutral-900 border-neutral-300 dark:border-neutral-600'
-          }`}
-        >
-          <span>🛗</span>
-          <span>{t('places.filter_elevator')}</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setFilterParking(!filterParking)}
-          aria-pressed={filterParking}
-          className={`min-h-[44px] px-3.5 py-2 rounded-lg text-xs font-bold border transition-colors cursor-pointer flex items-center gap-1.5 ${
-            filterParking
-              ? 'bg-blue-700 text-white border-blue-800'
-              : 'bg-white dark:bg-neutral-900 border-neutral-300 dark:border-neutral-600'
-          }`}
-        >
-          <span>🅿️</span>
-          <span>{t('places.filter_parking')}</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setFilterQuiet(!filterQuiet)}
-          aria-pressed={filterQuiet}
-          className={`min-h-[44px] px-3.5 py-2 rounded-lg text-xs font-bold border transition-colors cursor-pointer flex items-center gap-1.5 ${
-            filterQuiet
-              ? 'bg-blue-700 text-white border-blue-800'
-              : 'bg-white dark:bg-neutral-900 border-neutral-300 dark:border-neutral-600'
-          }`}
-        >
-          <span>🤫</span>
-          <span>{t('places.filter_quiet')}</span>
-        </button>
-      </section>
-
-      {/* Map & List Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <MapView
-            center={[coords.lat, coords.lng]}
-            markers={markers}
-            onMarkerSelect={(id) => setSelectedPlaceId(id)}
+        <div className="flex flex-wrap items-center gap-2">
+          <FilterChip
+            active={filterWheelchair}
+            onClick={() => setFilterWheelchair((v) => !v)}
+            icon={<Accessibility className="w-4 h-4" />}
+            label={t('places.filter_wheelchair')}
           />
-        </div>
+          <FilterChip
+            active={filterRamp}
+            onClick={() => setFilterRamp((v) => !v)}
+            icon={<TrendingUp className="w-4 h-4" />}
+            label={t('places.filter_ramp')}
+          />
+          <FilterChip
+            active={filterElevator}
+            onClick={() => setFilterElevator((v) => !v)}
+            icon={<ArrowUpDown className="w-4 h-4" />}
+            label={t('places.filter_elevator')}
+          />
+          <FilterChip
+            active={filterParking}
+            onClick={() => setFilterParking((v) => !v)}
+            icon={<CircleParking className="w-4 h-4" />}
+            label={t('places.filter_parking')}
+          />
+          <FilterChip
+            active={filterQuiet}
+            onClick={() => setFilterQuiet((v) => !v)}
+            icon={<VolumeX className="w-4 h-4" />}
+            label={t('places.filter_quiet')}
+          />
 
-        <div className="flex flex-col gap-4">
-          <h2 className="text-lg font-bold text-neutral-900 dark:text-neutral-100">
-            Selected Location
-          </h2>
-          {loading ? (
-            <div className="p-8 text-center text-sm text-neutral-500 animate-pulse">
-              Loading places...
-            </div>
-          ) : selectedPlace ? (
-            <PlaceCard place={selectedPlace} />
-          ) : (
-            <p className="text-sm text-neutral-500 p-4 border border-dashed rounded-lg">
-              {t('places.no_results')}
-            </p>
+          {hasActiveFilters && (
+            <SecondaryButton
+              type="button"
+              onClick={clearFilters}
+              className="px-3 py-2 text-xs"
+            >
+              <RotateCcw className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+              <span>{t('finder.clear_filters')}</span>
+            </SecondaryButton>
           )}
         </div>
+
+        <ViewModeToggle value={viewMode} onChange={setViewMode} />
+      </section>
+
+      <div aria-live="polite" className="text-sm font-medium text-[var(--ink-muted)]">
+        {!loading && !error && t('finder.results_count', { count: filteredPlaces.length })}
       </div>
 
-      {/* Place list */}
-      <section aria-labelledby="all-places-heading" className="flex flex-col gap-4 mt-4">
-        <h2 id="all-places-heading" className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
-          All Accessible Places ({filteredPlaces.length})
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredPlaces.map((p) => (
-            <PlaceCard key={p.id} place={p} />
-          ))}
-        </div>
-      </section>
+      {loading ? (
+        <StateMessage kind="loading" />
+      ) : error ? (
+        <StateMessage kind="error" onRetry={handleRetry} />
+      ) : filteredPlaces.length === 0 ? (
+        <StateMessage
+          kind="empty"
+          title={t('places.no_results')}
+          onRetry={hasActiveFilters ? clearFilters : handleRetry}
+        />
+      ) : (
+        <>
+          {viewMode === 'map' && (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                <MapView
+                  center={[coords.lat, coords.lng]}
+                  markers={markers}
+                  onMarkerSelect={(id) => setSelectedPlaceId(id)}
+                  ariaLabel={t('finder.map_aria')}
+                />
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <h2 className="text-lg font-bold text-[var(--ink)]">
+                  {t('finder.selected_location')}
+                </h2>
+                {selectedPlace ? (
+                  <PlaceCard place={selectedPlace} />
+                ) : (
+                  <Card>
+                    <p className="text-sm text-[var(--ink-muted)]">
+                      {t('finder.select_pin_hint')}
+                    </p>
+                  </Card>
+                )}
+              </div>
+            </div>
+          )}
+
+          <section aria-labelledby="all-places-heading" className="flex flex-col gap-4">
+            <h2
+              id="all-places-heading"
+              className="text-xl font-bold text-[var(--ink)]"
+            >
+              {t('finder.all_places')} ({filteredPlaces.length})
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredPlaces.map((p) => (
+                <PlaceCard key={p.id} place={p} />
+              ))}
+            </div>
+          </section>
+        </>
+      )}
     </div>
   )
 }
