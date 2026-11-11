@@ -1,0 +1,55 @@
+[
+  {
+    "id": "w1",
+    "name": "Secunderabad Railway Station Accessible Toilet",
+    "lat": 17.4344,
+    "lng": 78.5017,
+    "rating": 4.5,
+    "verified": true,
+    "last_verified": "2026-11-01",
+    "wheelchair_friendly": true,
+    "grab_rails": true,
+    "fee": "Free",
+    "address": "Platform 1, Secunderabad Junction"
+  },
+  {
+    "id": "w2",
+    "name": "Hussain Sagar Lake Public Restroom",
+    "lat": 17.4239,
+    "lng": 78.4738,
+    "rating": 4.0,
+    "verified": true,
+    "last_verified": "2026-10-28",
+    "wheelchair_friendly": true,
+    "grab_rails": true,
+    "fee": "Rs 5",
+    "address": "Necklace Road Promenade, Tank Bund"
+  },
+  {
+    "id": "w3",
+    "name": "HITEC City Metro Station Restroom",
+    "lat": 17.4474,
+    "lng": 78.3762,
+    "rating": 4.8,
+    "verified": true,
+    "last_verified": "2026-11-08",
+    "wheelchair_friendly": true,
+    "grab_rails": true,
+    "fee": "Free",
+    "address": "Concourse Level, HITEC City Metro"
+  },
+  {
+    "id": "w4",
+    "name": "Lumbini Park Accessible Washroom",
+    "lat": 17.4101,
+    "lng": 78.4729,
+    "rating": 3.7,
+    "verified": false,
+    "last_verified": "2026-09-15",
+    "wheelchair_friendly": true,
+    "grab_rails": false,
+    "fee": "Rs 5",
+    "address": "Opp Secretariat, Khairatabad"
+  }
+]
+
