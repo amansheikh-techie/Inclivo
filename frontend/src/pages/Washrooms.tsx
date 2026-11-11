@@ -18,7 +18,7 @@ export function Washrooms() {
   }, [])
 
   const sortedWashrooms = [...washrooms].sort((a, b) => {
-    if (sortBy === 'rating') return b.rating - a.rating
+    if (sortBy === 'rating') return (b.cleanliness_rating ?? 0) - (a.cleanliness_rating ?? 0)
     if (sortBy === 'verified') return (b.verified ? 1 : 0) - (a.verified ? 1 : 0)
     return 0
   })
@@ -28,8 +28,8 @@ export function Washrooms() {
     lat: w.lat,
     lng: w.lng,
     title: w.name,
-    subtitle: `Rating: ${w.rating}/5.0 • ${w.verified ? 'Verified' : 'Community'}`,
-    badge: `★ ${w.rating}`,
+    subtitle: `Rating: ${w.cleanliness_rating ?? 'N/A'}/5.0 • ${w.verified ? 'Verified' : 'Community'}`,
+    badge: `★ ${w.cleanliness_rating ?? 'N/A'}`,
   }))
 
   return (
@@ -101,7 +101,7 @@ export function Washrooms() {
                         {w.name}
                       </h3>
                       <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300">
-                        ★ {w.rating}
+                        ★ {w.cleanliness_rating ?? 'N/A'}
                       </span>
                     </div>
 
@@ -119,14 +119,6 @@ export function Washrooms() {
                       >
                         <span>{w.verified ? '✓' : 'ℹ️'}</span>
                         <span>{w.verified ? t('washrooms.verified') : t('washrooms.unverified')}</span>
-                      </span>
-
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded border bg-blue-50 text-blue-900 border-blue-200">
-                        <span>♿ Wheelchair: {w.wheelchair_friendly ? 'Yes' : 'No'}</span>
-                      </span>
-
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded border bg-purple-50 text-purple-900 border-purple-200">
-                        <span>Fee: {w.fee}</span>
                       </span>
                     </div>
 

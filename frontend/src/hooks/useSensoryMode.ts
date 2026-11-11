@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react'
 
-export type SensoryMode = 'high-contrast' | 'large-text' | 'reduce-motion' | 'dyslexia'
+export type SensoryMode =
+  | 'dark'
+  | 'high-contrast'
+  | 'large-text'
+  | 'reduce-motion'
+  | 'dyslexia'
 
 const STORAGE_KEY = 'inclivo_sensory_modes'
 

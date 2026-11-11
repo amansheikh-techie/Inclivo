@@ -12,10 +12,21 @@
     "schemes": "Government Schemes",
     "report": "Report Issue",
     "passport": "Accessibility Passport",
-    "about": "About"
+    "about": "About",
+    "more": "More",
+    "more_tools": "More tools & pages",
+    "search_placeholder": "Search schemes or places...",
+    "search_label": "Search Inclivo",
+    "skip_to_content": "Skip to main content",
+    "sensory_settings": "Sensory settings",
+    "profile": "Profile & Passport",
+    "close": "Close",
+    "sidebar_label": "Primary navigation",
+    "mobile_nav_label": "Mobile bottom navigation"
   },
   "sensory": {
     "title": "Sensory & Display Modes",
+    "dark_mode": "Dark Mode",
     "high_contrast": "High Contrast",
     "large_text": "Large Text",
     "reduce_motion": "Reduce Motion",
@@ -106,7 +117,13 @@
     "holding": "Hold for 2 seconds to alert...",
     "cancelling": "Alert triggered! Cancel in {seconds}s",
     "cancel": "Cancel Emergency Alert",
-    "dispatched": "Emergency alert sent with your current GPS coordinates."
+    "dispatched": "Location logged and share link prepared for your contacts.",
+    "cancelled": "Emergency alert cancelled.",
+    "disclaimer": "Logs location & opens a message for your contacts — does not contact emergency services.",
+    "sms_action": "Open SMS"
+  },
+  "footer": {
+    "copyright": "© 2026 Inclivo. Accessible-first platform. WCAG 2.1 AA."
   },
   "about": {
     "title": "About Inclivo",
