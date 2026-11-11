@@ -161,7 +161,7 @@ Full details: [`docs/BACKEND_PRD.md`](docs/BACKEND_PRD.md) and [`docs/FRONTEND_P
 - Partnerships with NGOs and local authorities.
 
 ## Team
-- **Person 2** – Frontend
+- **Sanjay** – Frontend
 - **Aman** – Backend, documentation
 
 ## Licence
