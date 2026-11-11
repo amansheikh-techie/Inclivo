@@ -1,19 +1,51 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { api } from '../lib/api'
+import {
+  AlertTriangle,
+  Bot,
+  Camera,
+  FileText,
+  Info,
+  RotateCcw,
+  Send,
+  Sparkles,
+  User,
+  VolumeX,
+} from 'lucide-react'
+import { api, useDemoData } from '../lib/api'
 import { useSpeechRecognition } from '../hooks/useSpeechRecognition'
 import { useSpeak } from '../hooks/useSpeak'
 import { VoiceButton } from '../components/VoiceButton'
+import {
+  ActionButton,
+  Card,
+  DemoBanner,
+  SecondaryButton,
+  StateMessage,
+} from '../components/ui'
+
+interface ChatMessage {
+  id: string
+  role: 'user' | 'assistant'
+  text: string
+  isError?: boolean
+}
 
 export function Assistant() {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const isDemo = useDemoData()
 
-  const [assistantReply, setAssistantReply] = useState<string>('')
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const lastTranscriptRef = useRef<string>('')
+  const navTimerRef = useRef<number | null>(null)
+
+  const [messages, setMessages] = useState<ChatMessage[]>([])
+  const [textInput, setTextInput] = useState('')
   const [loading, setLoading] = useState(false)
-  const [activeTask, setActiveTask] = useState<'chat' | 'describe' | 'ocr'>('chat')
+  const [errorPrompt, setErrorPrompt] = useState<string | null>(null)
+  const [activeTask, setActiveTask] = useState<'describe' | 'ocr'>('describe')
 
   const { speak, stop, repeat, isSpeaking, hasSpoken } = useSpeak()
   const {
@@ -24,70 +56,117 @@ export function Assistant() {
     isSupported,
   } = useSpeechRecognition({ continuous: false, interimResults: false })
 
-  // Handle voice commands & queries when speech concludes
-  useEffect(() => {
-    if (!transcript.trim()) return
+  const appendMessage = useCallback(
+    (role: 'user' | 'assistant', text: string, isError = false) => {
+      setMessages((prev) => [
+        ...prev,
+        { id: `${Date.now()}-${Math.random()}`, role, text, isError },
+      ])
+    },
+    [],
+  )
 
-    const lower = transcript.toLowerCase()
+  const submitPrompt = useCallback(
+    async (rawText: string) => {
+      const clean = rawText.trim()
+      if (!clean) return
 
-    // Voice command dispatching
-    if (lower.includes('washroom') || lower.includes('toilet') || lower.includes('restroom')) {
-      const msg = 'Navigating you to accessible washrooms.'
-      setAssistantReply(msg)
-      speak(msg)
-      setTimeout(() => navigate('/washrooms'), 1200)
-      return
-    }
+      setErrorPrompt(null)
+      appendMessage('user', clean)
 
-    if (lower.includes('scheme') || lower.includes('pension') || lower.includes('welfare')) {
-      const msg = 'Opening government schemes finder for you.'
-      setAssistantReply(msg)
-      speak(msg)
-      setTimeout(() => navigate('/schemes'), 1200)
-      return
-    }
+      const lower = clean.toLowerCase()
+      const routes: { match: boolean; msg: string; to: string }[] = [
+        {
+          match:
+            lower.includes('washroom') ||
+            lower.includes('toilet') ||
+            lower.includes('restroom'),
+          msg: t('assistant_ui.nav_washrooms'),
+          to: '/washrooms',
+        },
+        {
+          match:
+            lower.includes('scheme') ||
+            lower.includes('pension') ||
+            lower.includes('welfare'),
+          msg: t('assistant_ui.nav_schemes'),
+          to: '/schemes',
+        },
+        {
+          match:
+            lower.includes('place') ||
+            lower.includes('ramp') ||
+            lower.includes('map'),
+          msg: t('assistant_ui.nav_places'),
+          to: '/places',
+        },
+      ]
 
-    if (lower.includes('place') || lower.includes('ramp') || lower.includes('map')) {
-      const msg = 'Navigating to accessible places map.'
-      setAssistantReply(msg)
-      speak(msg)
-      setTimeout(() => navigate('/places'), 1200)
-      return
-    }
+      const navHit = routes.find((r) => r.match)
+      if (navHit) {
+        appendMessage('assistant', navHit.msg)
+        speak(navHit.msg)
+        if (navTimerRef.current) window.clearTimeout(navTimerRef.current)
+        navTimerRef.current = window.setTimeout(() => navigate(navHit.to), 1200)
+        return
+      }
 
-    // Default: chat query to backend assistant
-    setLoading(true)
-    api.chatAssistant(transcript, i18n.language)
-      .then((res) => {
-        setAssistantReply(res.reply)
+      setLoading(true)
+      try {
+        const res = await api.chatAssistant(clean, i18n.language)
+        appendMessage('assistant', res.reply)
         speak(res.reply)
-      })
-      .catch(() => {
-        const errorMsg = 'Could not reach assistant server. Please try again.'
-        setAssistantReply(errorMsg)
-        speak(errorMsg)
-      })
-      .finally(() => setLoading(false))
-  }, [transcript, i18n.language, navigate, speak])
+      } catch {
+        const errMsg = t('assistant_ui.error_server')
+        setErrorPrompt(clean)
+        appendMessage('assistant', errMsg, true)
+        speak(errMsg)
+      } finally {
+        setLoading(false)
+      }
+    },
+    [appendMessage, i18n.language, navigate, speak, t],
+  )
+
+  useEffect(() => {
+    const clean = transcript.trim()
+    if (!clean || clean === lastTranscriptRef.current) return
+    lastTranscriptRef.current = clean
+    void Promise.resolve().then(() => submitPrompt(clean))
+  }, [transcript, submitPrompt])
+
+  useEffect(() => {
+    return () => {
+      if (navTimerRef.current) window.clearTimeout(navTimerRef.current)
+    }
+  }, [])
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
+    event.target.value = ''
     if (!file) return
 
+    const taskLabel =
+      activeTask === 'describe'
+        ? t('assistant.describe_scene')
+        : t('assistant.read_document')
+    appendMessage('user', `${taskLabel}: ${file.name}`)
     setLoading(true)
+    setErrorPrompt(null)
+
     try {
       if (activeTask === 'describe') {
         const res = await api.describeImage(file)
-        setAssistantReply(res.description)
+        appendMessage('assistant', res.description)
         speak(res.description)
       } else {
         const res = await api.ocrImage(file)
-        setAssistantReply(res.text)
+        appendMessage('assistant', res.text)
         speak(res.text)
       }
     } catch {
-      const errMsg = 'Image processing failed. Please try another image.'
-      setAssistantReply(errMsg)
+      const errMsg = t('assistant_ui.error_image')
+      appendMessage('assistant', errMsg, true)
       speak(errMsg)
     } finally {
       setLoading(false)
@@ -99,66 +178,98 @@ export function Assistant() {
     fileInputRef.current?.click()
   }
 
+  const handleTextSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!textInput.trim() || loading) return
+    const q = textInput.trim()
+    setTextInput('')
+    void submitPrompt(q)
+  }
+
+  const suggestedPrompts = [
+    t('assistant_ui.prompt_washrooms'),
+    t('assistant_ui.prompt_schemes'),
+    t('assistant_ui.prompt_places'),
+    t('assistant_ui.prompt_help'),
+  ]
+
+  const latestAssistant = [...messages]
+    .reverse()
+    .find((m) => m.role === 'assistant')?.text
+
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 flex flex-col gap-8">
-      <header className="text-center flex flex-col items-center gap-2">
-        <h1 className="text-3xl sm:text-4xl font-black text-neutral-900 dark:text-neutral-100">
+    <div className="flex flex-col gap-6">
+      {isDemo && <DemoBanner />}
+
+      <header className="flex flex-col items-start gap-2">
+        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--ink)]">
           {t('assistant.title')}
         </h1>
-        <p className="text-neutral-600 dark:text-neutral-400 text-sm max-w-xl">
+        <p className="text-sm sm:text-base text-[var(--ink-muted)] max-w-2xl">
           {t('assistant.subtitle')}
         </p>
-        <span className="inline-block mt-2 text-xs font-semibold px-3 py-1 rounded-full bg-purple-100 text-purple-900 dark:bg-purple-950 dark:text-purple-200 border border-purple-300">
-          💡 {t('assistant.voice_commands_tip')}
-        </span>
+
+        <div className="flex flex-wrap items-center gap-2 pt-1">
+          <span className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1 rounded-full bg-[var(--surface)] border border-[var(--border)] text-[var(--ink-muted)]">
+            <Info className="w-3.5 h-3.5 shrink-0 text-[var(--accent-text)]" aria-hidden="true" />
+            <span>{t('assistant_ui.browser_speech_note')}</span>
+          </span>
+          <span
+            data-accent-fill="true"
+            className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full bg-[var(--accent)] text-[var(--accent-ink)]"
+          >
+            <Sparkles className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+            <span>{t('assistant.voice_commands_tip')}</span>
+          </span>
+        </div>
       </header>
 
-      {/* Main Big Voice Button */}
+      {/* Main Voice Hero Card */}
+      <Card className="p-6 sm:p-8 flex flex-col items-center justify-center gap-5 text-center">
+        <section
+          aria-label={t('assistant_ui.voice_region_label')}
+          className="flex flex-col items-center gap-5 w-full"
+        >
+          <VoiceButton
+            isListening={isListening}
+            onClick={isListening ? stopListening : startListening}
+            label={isListening ? t('assistant.listening') : t('assistant.speak_button')}
+            ariaLabel={t('assistant_ui.speak_aria')}
+            disabled={!isSupported || loading}
+          />
+
+          {!isSupported && (
+            <p
+              role="status"
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-50 dark:bg-amber-950/50 border border-amber-500/40 text-amber-950 dark:text-amber-100 text-xs font-medium"
+            >
+              <AlertTriangle className="w-4 h-4 shrink-0" aria-hidden="true" />
+              <span>{t('captions.unsupported')}</span>
+            </p>
+          )}
+
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <SecondaryButton type="button" onClick={repeat} disabled={!hasSpoken}>
+              <RotateCcw className="w-4 h-4 shrink-0" aria-hidden="true" />
+              <span>{t('assistant.repeat')}</span>
+            </SecondaryButton>
+
+            <button
+              type="button"
+              onClick={stop}
+              disabled={!isSpeaking}
+              className="min-h-[44px] px-4 py-2.5 rounded-xl bg-red-700 hover:bg-red-800 text-white text-sm font-semibold inline-flex items-center gap-2 cursor-pointer transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <VolumeX className="w-4 h-4 shrink-0" aria-hidden="true" />
+              <span>{t('assistant.stop')}</span>
+            </button>
+          </div>
+        </section>
+      </Card>
+
+      {/* Camera / Upload Vision & OCR Actions */}
       <section
-        aria-label="Voice conversation area"
-        className="flex flex-col items-center justify-center gap-6 p-8 bg-neutral-100 dark:bg-neutral-800 rounded-3xl border border-neutral-300 dark:border-neutral-700 shadow-sm text-center"
-      >
-        <VoiceButton
-          isListening={isListening}
-          onClick={isListening ? stopListening : startListening}
-          label={isListening ? t('assistant.listening') : t('assistant.speak_button')}
-          ariaLabel="Tap to activate voice input and speak to assistant"
-          disabled={!isSupported || loading}
-        />
-
-        {!isSupported && (
-          <p className="text-amber-800 dark:text-amber-300 text-xs font-medium">
-            ⚠️ Web Speech API not enabled in this browser. Please use Chrome or Edge.
-          </p>
-        )}
-
-        {/* Audio control actions */}
-        <div className="flex flex-wrap items-center justify-center gap-3">
-          <button
-            type="button"
-            onClick={repeat}
-            disabled={!hasSpoken}
-            className="min-h-[44px] px-5 py-2.5 rounded-xl bg-neutral-200 dark:bg-neutral-700 hover:bg-neutral-300 dark:hover:bg-neutral-600 font-bold text-sm cursor-pointer disabled:opacity-40 flex items-center gap-2"
-          >
-            <span>🔁</span>
-            <span>{t('assistant.repeat')}</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={stop}
-            disabled={!isSpeaking}
-            className="min-h-[44px] px-5 py-2.5 rounded-xl bg-red-100 dark:bg-red-950 text-red-900 dark:text-red-200 border border-red-300 dark:border-red-800 hover:bg-red-200 font-bold text-sm cursor-pointer disabled:opacity-40 flex items-center gap-2"
-          >
-            <span>⏹</span>
-            <span>{t('assistant.stop')}</span>
-          </button>
-        </div>
-      </section>
-
-      {/* Vision & OCR actions */}
-      <section
-        aria-label="Vision assistance tools"
+        aria-label={t('assistant_ui.vision_region_label')}
         className="grid grid-cols-1 sm:grid-cols-2 gap-4"
       >
         <input
@@ -169,21 +280,27 @@ export function Assistant() {
           onChange={handleFileUpload}
           className="hidden"
           aria-hidden="true"
+          tabIndex={-1}
         />
 
         <button
           type="button"
           onClick={() => triggerUpload('describe')}
           disabled={loading}
-          className="min-h-[64px] p-4 rounded-2xl border-2 border-purple-400 bg-purple-50 dark:bg-purple-950/30 hover:bg-purple-100 dark:hover:bg-purple-900/40 text-left flex items-center gap-4 cursor-pointer focus-visible:ring-4 focus-visible:ring-purple-500"
+          className="min-h-[76px] p-5 rounded-2xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-muted)] text-left flex items-center gap-4 cursor-pointer shadow-sm transition-colors disabled:opacity-50"
         >
-          <span className="text-3xl" aria-hidden="true">📷</span>
+          <span
+            data-accent-fill="true"
+            className="w-12 h-12 rounded-xl bg-[var(--accent)] text-[var(--accent-ink)] flex items-center justify-center shrink-0"
+          >
+            <Camera className="w-6 h-6" aria-hidden="true" />
+          </span>
           <div>
-            <h2 className="font-bold text-neutral-900 dark:text-neutral-100 text-base">
+            <h2 className="font-bold text-[var(--ink)] text-base">
               {t('assistant.describe_scene')}
             </h2>
-            <p className="text-xs text-neutral-600 dark:text-neutral-400">
-              Take photo to hear obstacle analysis
+            <p className="text-xs text-[var(--ink-muted)] mt-0.5">
+              {t('assistant_ui.describe_desc')}
             </p>
           </div>
         </button>
@@ -192,41 +309,150 @@ export function Assistant() {
           type="button"
           onClick={() => triggerUpload('ocr')}
           disabled={loading}
-          className="min-h-[64px] p-4 rounded-2xl border-2 border-indigo-400 bg-indigo-50 dark:bg-indigo-950/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 text-left flex items-center gap-4 cursor-pointer focus-visible:ring-4 focus-visible:ring-indigo-500"
+          className="min-h-[76px] p-5 rounded-2xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-muted)] text-left flex items-center gap-4 cursor-pointer shadow-sm transition-colors disabled:opacity-50"
         >
-          <span className="text-3xl" aria-hidden="true">📄</span>
+          <span
+            data-accent-fill="true"
+            className="w-12 h-12 rounded-xl bg-[var(--accent)] text-[var(--accent-ink)] flex items-center justify-center shrink-0"
+          >
+            <FileText className="w-6 h-6" aria-hidden="true" />
+          </span>
           <div>
-            <h2 className="font-bold text-neutral-900 dark:text-neutral-100 text-base">
+            <h2 className="font-bold text-[var(--ink)] text-base">
               {t('assistant.read_document')}
             </h2>
-            <p className="text-xs text-neutral-600 dark:text-neutral-400">
-              Read signboards, receipts, or forms aloud
+            <p className="text-xs text-[var(--ink-muted)] mt-0.5">
+              {t('assistant_ui.ocr_desc')}
             </p>
           </div>
         </button>
       </section>
 
-      {/* Live Region for Screen Readers & Response Display */}
-      <section
-        aria-live="assertive"
-        aria-atomic="true"
-        className="p-6 rounded-2xl bg-white dark:bg-neutral-900 border-2 border-neutral-300 dark:border-neutral-700 min-h-[140px] shadow-sm flex flex-col justify-between"
-      >
-        <div>
-          <span className="text-xs font-bold uppercase tracking-wider text-purple-700 dark:text-purple-400">
-            {loading ? 'Processing...' : isSpeaking ? t('assistant.status_speaking') : 'Assistant Output'}
+      {/* Suggested Prompts */}
+      <section aria-labelledby="suggested-prompts-heading" className="space-y-2.5">
+        <h2
+          id="suggested-prompts-heading"
+          className="text-sm font-bold text-[var(--ink)] flex items-center gap-1.5"
+        >
+          <Sparkles className="w-4 h-4 text-[var(--accent-text)]" aria-hidden="true" />
+          <span>{t('assistant_ui.suggested_heading')}</span>
+        </h2>
+        <div className="flex flex-wrap gap-2">
+          {suggestedPrompts.map((prompt) => (
+            <button
+              key={prompt}
+              type="button"
+              disabled={loading}
+              onClick={() => void submitPrompt(prompt)}
+              className="min-h-[44px] px-4 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-muted)] text-xs sm:text-sm font-semibold text-[var(--ink)] cursor-pointer transition-colors disabled:opacity-50"
+            >
+              {prompt}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* Chat Bubbles + Live Status + Text Input */}
+      <Card className="flex flex-col gap-4">
+        <div className="flex items-center justify-between gap-2 border-b border-[var(--border)] pb-3">
+          <h2 className="text-base font-bold text-[var(--ink)]">
+            {t('assistant_ui.chat_heading')}
+          </h2>
+          <span className="text-xs font-semibold text-[var(--accent-text)]">
+            {loading
+              ? t('assistant_ui.processing')
+              : isSpeaking
+                ? t('assistant.status_speaking')
+                : t('assistant.status_idle')}
           </span>
-          <p className="text-lg font-medium text-neutral-900 dark:text-neutral-100 mt-2 leading-relaxed">
-            {assistantReply || t('assistant.status_idle')}
-          </p>
         </div>
 
-        {transcript && (
-          <p className="text-xs text-neutral-500 mt-4 border-t pt-2 border-neutral-200 dark:border-neutral-800">
-            Last heard: &ldquo;{transcript}&rdquo;
-          </p>
+        {/* Polite/assertive aria-live announcement for screen readers */}
+        <div aria-live="polite" aria-atomic="true" className="sr-only">
+          {loading
+            ? t('assistant_ui.processing')
+            : latestAssistant || t('assistant.status_idle')}
+        </div>
+
+        {messages.length === 0 && !loading ? (
+          <StateMessage
+            kind="empty"
+            title={t('assistant_ui.empty_chat_title')}
+            description={t('assistant_ui.empty_chat_desc')}
+          />
+        ) : (
+          <div className="flex flex-col gap-3 max-h-[420px] overflow-y-auto pr-1">
+            {messages.map((m) => {
+              const isUser = m.role === 'user'
+              return (
+                <div
+                  key={m.id}
+                  className={`flex items-start gap-2.5 ${
+                    isUser ? 'flex-row-reverse' : 'flex-row'
+                  }`}
+                >
+                  <span
+                    aria-hidden="true"
+                    className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 border ${
+                      isUser
+                        ? 'bg-[var(--action)] text-[var(--action-ink)] border-transparent'
+                        : 'bg-[var(--surface-muted)] text-[var(--accent-text)] border-[var(--border)]'
+                    }`}
+                  >
+                    {isUser ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
+                  </span>
+
+                  <div
+                    className={`max-w-[82%] rounded-2xl px-4 py-3 text-sm sm:text-base leading-relaxed ${
+                      isUser
+                        ? 'bg-[var(--action)] text-[var(--action-ink)]'
+                        : m.isError
+                          ? 'bg-red-50 dark:bg-red-950/40 text-red-900 dark:text-red-100 border border-red-400'
+                          : 'bg-[var(--surface-muted)] text-[var(--ink)] border border-[var(--border)]'
+                    }`}
+                  >
+                    <p className="text-xs font-bold mb-1 opacity-85">
+                      {isUser
+                        ? t('assistant_ui.user_label')
+                        : t('assistant_ui.assistant_label')}
+                    </p>
+                    <p>{m.text}</p>
+                  </div>
+                </div>
+              )
+            })}
+
+            {loading && (
+              <StateMessage kind="loading" title={t('assistant_ui.processing')} />
+            )}
+          </div>
         )}
-      </section>
+
+        {errorPrompt && !loading && (
+          <StateMessage
+            kind="error"
+            title={t('states.error_title')}
+            description={t('assistant_ui.error_server')}
+            onRetry={() => void submitPrompt(errorPrompt)}
+          />
+        )}
+
+        <form onSubmit={handleTextSubmit} className="flex flex-col sm:flex-row gap-2 pt-2 border-t border-[var(--border)]">
+          <input
+            type="text"
+            value={textInput}
+            onChange={(e) => setTextInput(e.target.value)}
+            placeholder={t('assistant_ui.input_placeholder')}
+            aria-label={t('assistant_ui.input_placeholder')}
+            disabled={loading}
+            className="flex-1 min-h-[44px] px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--ink)] text-sm placeholder:text-[var(--ink-muted)]"
+          />
+          <ActionButton type="submit" disabled={loading || !textInput.trim()}>
+            <Send className="w-4 h-4 shrink-0" aria-hidden="true" />
+            <span>{t('assistant_ui.send')}</span>
+          </ActionButton>
+        </form>
+      </Card>
     </div>
   )
 }
