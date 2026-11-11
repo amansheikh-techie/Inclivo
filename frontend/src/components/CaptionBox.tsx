@@ -1,5 +1,17 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import {
+  AlertTriangle,
+  Download,
+  MessageSquareText,
+  Mic,
+  PauseCircle,
+  Radio,
+  Square,
+  Trash2,
+  Type,
+} from 'lucide-react'
+import { ActionButton, Card, SecondaryButton } from './ui'
 
 interface CaptionBoxProps {
   transcript: string
@@ -10,6 +22,8 @@ interface CaptionBoxProps {
   onClear: () => void
 }
 
+type FontSize = 'normal' | 'large' | 'huge'
+
 export function CaptionBox({
   transcript,
   interimTranscript,
@@ -19,10 +33,10 @@ export function CaptionBox({
   onClear,
 }: CaptionBoxProps) {
   const { t } = useTranslation()
-  const [fontSize, setFontSize] = useState<'normal' | 'large' | 'huge'>('large')
+  const [fontSize, setFontSize] = useState<FontSize>('large')
 
-  const fontClasses = {
-    normal: 'text-lg leading-relaxed',
+  const fontClasses: Record<FontSize, string> = {
+    normal: 'text-lg sm:text-xl leading-relaxed',
     large: 'text-2xl md:text-3xl leading-relaxed',
     huge: 'text-3xl md:text-5xl leading-relaxed font-semibold',
   }
@@ -41,94 +55,124 @@ export function CaptionBox({
   }
 
   return (
-    <section
-      aria-label="Live Speech Captions Display"
-      className="flex flex-col gap-4 w-full"
-    >
-      <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-neutral-100 dark:bg-neutral-800 rounded-xl border border-neutral-300 dark:border-neutral-700">
-        <div className="flex items-center gap-2">
+    <section aria-label={t('captions_ui.region_label')} className="flex flex-col gap-4 w-full">
+      <Card className="p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-2.5">
           <button
             type="button"
             onClick={onToggle}
             disabled={!isSupported}
             aria-pressed={isListening}
-            className={`min-h-[44px] px-5 py-2.5 rounded-lg font-bold text-sm flex items-center gap-2 cursor-pointer ${
+            className={`min-h-[44px] px-5 py-2.5 rounded-xl font-semibold text-sm inline-flex items-center gap-2 cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
               isListening
-                ? 'bg-red-600 text-white hover:bg-red-700 animate-pulse'
-                : 'bg-blue-700 text-white hover:bg-blue-800'
-            } disabled:opacity-50`}
+                ? 'bg-[var(--danger-solid)] text-[var(--danger-solid-ink)]'
+                : 'bg-[var(--action)] hover:bg-[var(--action-hover)] text-[var(--action-ink)]'
+            }`}
           >
-            <span>{isListening ? '⏹' : '▶'}</span>
+            {isListening ? (
+              <Square className="w-4 h-4 shrink-0 fill-current" aria-hidden="true" />
+            ) : (
+              <Mic className="w-4 h-4 shrink-0" aria-hidden="true" />
+            )}
             <span>{isListening ? t('captions.stop') : t('captions.start')}</span>
           </button>
 
-          <button
+          <SecondaryButton
             type="button"
             onClick={onClear}
             disabled={!transcript && !interimTranscript}
-            className="min-h-[44px] px-4 py-2 rounded-lg font-medium text-sm bg-neutral-200 dark:bg-neutral-700 hover:bg-neutral-300 dark:hover:bg-neutral-600 cursor-pointer disabled:opacity-40"
           >
-            Clear
-          </button>
+            <Trash2 className="w-4 h-4 shrink-0" aria-hidden="true" />
+            <span>{t('captions_ui.clear')}</span>
+          </SecondaryButton>
+
+          <span
+            data-accent-fill={isListening ? 'true' : undefined}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border ${
+              isListening
+                ? 'bg-[var(--accent)] text-[var(--accent-ink)] border-transparent'
+                : 'bg-[var(--surface-muted)] text-[var(--ink-muted)] border-[var(--border)]'
+            }`}
+          >
+            {isListening ? (
+              <Radio className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+            ) : (
+              <PauseCircle className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+            )}
+            <span>
+              {isListening ? t('captions_ui.status_live') : t('captions_ui.status_paused')}
+            </span>
+          </span>
         </div>
 
-        <div className="flex items-center gap-3">
-          <label htmlFor="caption-size-select" className="text-sm font-semibold">
-            {t('captions.font_size')}:
+        <div className="flex flex-wrap items-center gap-2.5">
+          <label
+            htmlFor="caption-size-select"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--ink)]"
+          >
+            <Type className="w-4 h-4 shrink-0 text-[var(--accent-text)]" aria-hidden="true" />
+            <span>{t('captions.font_size')}:</span>
           </label>
           <select
             id="caption-size-select"
             value={fontSize}
-            onChange={(e) => setFontSize(e.target.value as any)}
-            className="min-h-[44px] px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900 text-sm font-medium"
+            onChange={(e) => setFontSize(e.target.value as FontSize)}
+            className="min-h-[44px] px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--ink)] text-sm font-medium"
           >
-            <option value="normal">Standard</option>
-            <option value="large">Large</option>
-            <option value="huge">Extra Large</option>
+            <option value="normal">{t('captions_ui.size_normal')}</option>
+            <option value="large">{t('captions_ui.size_large')}</option>
+            <option value="huge">{t('captions_ui.size_huge')}</option>
           </select>
 
-          <button
+          <ActionButton
             type="button"
             onClick={saveTranscriptAsFile}
             disabled={!transcript.trim()}
-            className="min-h-[44px] px-4 py-2 rounded-lg font-semibold text-sm bg-emerald-700 text-white hover:bg-emerald-800 cursor-pointer disabled:opacity-40 flex items-center gap-2"
           >
-            <span>💾</span>
+            <Download className="w-4 h-4 shrink-0" aria-hidden="true" />
             <span>{t('captions.save_txt')}</span>
-          </button>
+          </ActionButton>
         </div>
-      </div>
+      </Card>
 
       {!isSupported && (
         <div
           role="alert"
-          className="p-4 rounded-lg bg-amber-100 border border-amber-300 text-amber-900 text-sm"
+          className="flex items-start gap-3 p-4 rounded-2xl border border-[var(--warn-border)] bg-[var(--warn-bg)] text-[var(--warn-ink)] text-sm font-medium"
         >
-          ⚠️ {t('captions.unsupported')}
+          <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" aria-hidden="true" />
+          <span>{t('captions.unsupported')}</span>
         </div>
       )}
 
       <div
         role="region"
+        aria-label={t('captions_ui.region_label')}
         aria-live="polite"
         aria-atomic="false"
-        className="w-full min-h-[300px] max-h-[500px] overflow-y-auto p-6 rounded-2xl bg-black text-amber-300 border-4 border-amber-400 font-mono shadow-inner"
+        className="w-full min-h-[320px] max-h-[520px] overflow-y-auto p-6 sm:p-8 rounded-2xl bg-[#0B1120] text-[#FDE68A] border-2 border-[var(--accent)] shadow-inner"
       >
         {transcript || interimTranscript ? (
-          <div>
+          <div className="space-y-2">
             <span className={fontClasses[fontSize]}>{transcript}</span>
             {interimTranscript && (
               <span
-                className={`${fontClasses[fontSize]} text-amber-100 italic ml-2 opacity-80`}
+                className={`${fontClasses[fontSize]} text-[#F8FAFC] italic ml-2 opacity-85`}
               >
                 {interimTranscript}
               </span>
             )}
           </div>
         ) : (
-          <p className="text-neutral-500 italic text-base">
-            {isListening ? t('captions.listening') : 'Press "Start Captions" and speak into your microphone.'}
-          </p>
+          <div className="h-full min-h-[240px] flex flex-col items-center justify-center text-center gap-3 text-[#CBD5E1]">
+            <MessageSquareText className="w-9 h-9 opacity-80" aria-hidden="true" />
+            <p className="text-base font-semibold text-white">
+              {isListening ? t('captions.listening') : t('captions_ui.empty_title')}
+            </p>
+            <p className="text-sm max-w-md text-[#CBD5E1]">
+              {t('captions_ui.empty_desc')}
+            </p>
+          </div>
         )}
       </div>
     </section>

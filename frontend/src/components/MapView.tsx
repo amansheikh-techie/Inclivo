@@ -3,14 +3,14 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
 import L from 'leaflet'
 
 // Fix Leaflet icon paths in Vite
-delete (L.Icon.Default.prototype as any)._getIconUrl
+delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: unknown })._getIconUrl
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
   iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 })
 
-interface MarkerItem {
+export interface MarkerItem {
   id: string
   lat: number
   lng: number
@@ -24,6 +24,7 @@ interface MapViewProps {
   zoom?: number
   markers: MarkerItem[]
   onMarkerSelect?: (id: string) => void
+  ariaLabel?: string
 }
 
 function MapUpdater({ center }: { center: [number, number] }) {
@@ -39,12 +40,13 @@ export function MapView({
   zoom = 13,
   markers,
   onMarkerSelect,
+  ariaLabel = 'Interactive OpenStreetMap for accessible locations',
 }: MapViewProps) {
   return (
     <div
       role="region"
-      aria-label="Interactive OpenStreetMap for Accessible Locations"
-      className="w-full h-[400px] md:h-[500px] rounded-xl overflow-hidden border border-neutral-300 dark:border-neutral-700 shadow-sm relative z-0"
+      aria-label={ariaLabel}
+      className="w-full h-[360px] md:h-[480px] rounded-2xl overflow-hidden border border-[var(--border)] bg-[var(--surface-muted)] shadow-sm relative z-0"
     >
       <MapContainer
         center={center}
@@ -66,17 +68,17 @@ export function MapView({
             }}
           >
             <Popup>
-              <div className="p-1">
-                <strong className="block text-sm font-bold text-neutral-900">
+              <div className="p-1 text-[#172B4D]">
+                <strong className="block text-sm font-bold text-[#172B4D]">
                   {m.title}
                 </strong>
                 {m.subtitle && (
-                  <span className="block text-xs text-neutral-600 mt-1">
+                  <span className="block text-xs text-[#475569] mt-1">
                     {m.subtitle}
                   </span>
                 )}
                 {m.badge && (
-                  <span className="inline-block mt-2 px-2 py-0.5 rounded text-xs font-semibold bg-blue-100 text-blue-900">
+                  <span className="inline-block mt-2 px-2 py-0.5 rounded-full text-xs font-semibold bg-[#24A69A] text-[#172B4D]">
                     {m.badge}
                   </span>
                 )}
