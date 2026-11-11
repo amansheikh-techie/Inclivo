@@ -28,3 +28,4 @@ export const NAV_ITEMS: NavItem[] = [
   { to: '/passport', labelKey: 'nav.passport', icon: Accessibility },
   { to: '/about', labelKey: 'nav.about', icon: Info },
 ]
+

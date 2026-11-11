@@ -80,3 +80,4 @@ export function Sidebar({ onOpenSensory, activeModeCount }: SidebarProps) {
     </aside>
   )
 }
+

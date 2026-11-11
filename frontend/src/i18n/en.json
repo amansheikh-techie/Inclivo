@@ -125,6 +125,20 @@
   "footer": {
     "copyright": "© 2026 Inclivo. Accessible-first platform. WCAG 2.1 AA."
   },
+  "home": {
+    "badge": "Unified Accessibility Platform",
+    "features_heading": "Core Accessibility Tools",
+    "open_tool": "Open tool"
+  },
+  "states": {
+    "loading": "Loading...",
+    "empty_title": "Nothing to show",
+    "empty_desc": "Try clearing filters or refreshing.",
+    "error_title": "Something went wrong",
+    "retry": "Try again",
+    "demo_badge": "Demo data",
+    "demo_desc": "Showing offline sample data because the backend API is unreachable."
+  },
   "about": {
     "title": "About Inclivo",
     "tagline": "Bridging accessibility gaps through modern, voice-first, and sensory-aware technology.",
