@@ -119,3 +119,4 @@ export function TopBar({ onOpenSensory, isSensoryOpen, activeModeCount }: TopBar
     </header>
   )
 }
+

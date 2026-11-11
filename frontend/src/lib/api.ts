@@ -1,9 +1,30 @@
+import { useSyncExternalStore } from 'react'
 import placesMock from '../mocks/places.json'
 import washroomsMock from '../mocks/washrooms.json'
 import schemesMock from '../mocks/schemes.json'
 import { supabase } from './supabase'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+
+let demoMode = false
+const demoListeners = new Set<() => void>()
+
+function setDemoMode(next: boolean) {
+  if (demoMode === next) return
+  demoMode = next
+  demoListeners.forEach((listener) => listener())
+}
+
+export function useDemoData(): boolean {
+  return useSyncExternalStore(
+    (listener) => {
+      demoListeners.add(listener)
+      return () => demoListeners.delete(listener)
+    },
+    () => demoMode,
+    () => false
+  )
+}
 
 async function getAuthHeader(): Promise<Record<string, string>> {
   try {
@@ -37,9 +58,11 @@ export async function fetchApi<T>(
     if (!res.ok) {
       throw new Error(`API error ${res.status}: ${res.statusText}`)
     }
+    setDemoMode(false)
     return await res.json()
   } catch (err) {
     if (fallbackData !== undefined) {
+      setDemoMode(true)
       return fallbackData
     }
     throw err
@@ -123,6 +146,57 @@ export interface EmergencyContact {
   phone: string
 }
 
+const normalizedPlacesFallback: Place[] = placesMock.map((p) => {
+  const breakdown: string[] = []
+  if (p.ramp) breakdown.push('Ramp (+30)')
+  if (p.elevator) breakdown.push('Elevator (+25)')
+  if (p.accessible_parking) breakdown.push('Accessible parking (+20)')
+  if (p.wheelchair_friendly) breakdown.push('Wheelchair friendly (+25)')
+  return {
+    id: p.id,
+    name: p.name,
+    category: p.category ?? null,
+    lat: p.lat,
+    lng: p.lng,
+    accessibility_score: p.score,
+    score_breakdown: breakdown,
+    has_ramp: p.ramp,
+    has_elevator: p.elevator,
+    accessible_parking: p.accessible_parking,
+    wheelchair_friendly: p.wheelchair_friendly,
+    quiet: p.quiet,
+    rating: null,
+    address: p.address ?? null,
+    distance_km: null,
+  }
+})
+
+const normalizedWashroomsFallback: Washroom[] = washroomsMock.map((w) => ({
+  id: w.id,
+  name: w.name,
+  lat: w.lat,
+  lng: w.lng,
+  cleanliness_rating: w.rating ?? null,
+  verified: w.verified,
+  last_verified: w.last_verified ?? null,
+  address: w.address ?? null,
+  distance_km: null,
+}))
+
+const normalizedSchemesFallback: Scheme[] = schemesMock.map((s) => ({
+  id: s.id,
+  name: s.name,
+  display_name: s.name,
+  disability_type: s.disability_type ?? null,
+  state: s.state ?? null,
+  eligibility: s.eligibility ?? null,
+  benefits: s.benefits ?? null,
+  apply_url: s.apply_url ?? null,
+  name_hi: null,
+  name_te: null,
+  name_ta: null,
+}))
+
 export const api = {
   getPlaces: (params?: { lat?: number; lng?: number; radius_km?: number }) => {
     const qs = params
@@ -134,7 +208,7 @@ export const api = {
           )
         ).toString()
       : ''
-    return fetchApi<Place[]>(`/api/places${qs}`, {}, placesMock as unknown as Place[])
+    return fetchApi<Place[]>(`/api/places${qs}`, {}, normalizedPlacesFallback)
   },
 
   getWashrooms: (params?: { lat?: number; lng?: number; radius_km?: number }) => {
@@ -147,7 +221,7 @@ export const api = {
           )
         ).toString()
       : ''
-    return fetchApi<Washroom[]>(`/api/washrooms${qs}`, {}, washroomsMock as unknown as Washroom[])
+    return fetchApi<Washroom[]>(`/api/washrooms${qs}`, {}, normalizedWashroomsFallback)
   },
 
   getSchemes: (params?: { q?: string; type?: string; state?: string; lang?: string }) => {
@@ -160,7 +234,7 @@ export const api = {
           )
         ).toString()
       : ''
-    return fetchApi<Scheme[]>(`/api/schemes${qs}`, {}, schemesMock as unknown as Scheme[])
+    return fetchApi<Scheme[]>(`/api/schemes${qs}`, {}, normalizedSchemesFallback)
   },
 
   matchSchemes: (profile: {
@@ -173,7 +247,7 @@ export const api = {
     fetchApi<MatchedScheme[]>(
       '/api/schemes/match',
       { method: 'POST', body: JSON.stringify(profile) },
-      (schemesMock as unknown as Scheme[])
+      normalizedSchemesFallback
         .filter((s) => !s.state || s.state === 'All India' || s.state === profile.state)
         .map((s) => ({ scheme: s, reason: 'Matches your profile' }))
     ),
