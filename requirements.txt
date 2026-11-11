@@ -1,7 +1,0 @@
-fastapi
-uvicorn[standard]
-pydantic
-supabase
-google-genai
-slowapi
-python-multipart
