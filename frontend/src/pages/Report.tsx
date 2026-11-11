@@ -183,7 +183,7 @@ export function Report() {
               <p
                 id="issue-desc-error"
                 role="alert"
-                className="mt-1.5 inline-flex items-center gap-1.5 text-xs font-semibold text-red-700 dark:text-red-400"
+                className="mt-1.5 inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--danger-ink)]"
               >
                 <AlertCircle className="w-4 h-4 shrink-0" aria-hidden="true" />
                 <span>{descError}</span>
@@ -266,7 +266,7 @@ export function Report() {
                         className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold border ${
                           resolved
                             ? 'bg-[var(--accent)] text-[var(--accent-ink)] border-transparent'
-                            : 'bg-amber-100 text-amber-950 border-amber-400 dark:bg-amber-950/60 dark:text-amber-100 dark:border-amber-700'
+                            : 'bg-[var(--warn-bg)] text-[var(--warn-ink)] border-[var(--warn-border)]'
                         }`}
                       >
                         {resolved ? (

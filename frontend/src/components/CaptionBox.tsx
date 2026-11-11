@@ -65,7 +65,7 @@ export function CaptionBox({
             aria-pressed={isListening}
             className={`min-h-[44px] px-5 py-2.5 rounded-xl font-semibold text-sm inline-flex items-center gap-2 cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
               isListening
-                ? 'bg-red-700 hover:bg-red-800 text-white'
+                ? 'bg-[var(--danger-solid)] text-[var(--danger-solid-ink)]'
                 : 'bg-[var(--action)] hover:bg-[var(--action-hover)] text-[var(--action-ink)]'
             }`}
           >
@@ -138,7 +138,7 @@ export function CaptionBox({
       {!isSupported && (
         <div
           role="alert"
-          className="flex items-start gap-3 p-4 rounded-2xl border border-amber-500/40 bg-amber-50 dark:bg-amber-950/50 text-amber-950 dark:text-amber-100 text-sm font-medium"
+          className="flex items-start gap-3 p-4 rounded-2xl border border-[var(--warn-border)] bg-[var(--warn-bg)] text-[var(--warn-ink)] text-sm font-medium"
         >
           <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" aria-hidden="true" />
           <span>{t('captions.unsupported')}</span>

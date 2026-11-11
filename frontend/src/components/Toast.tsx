@@ -14,10 +14,10 @@ export function Toast({ message, type = 'info', onClose }: ToastProps) {
   const Icon = type === 'success' ? CheckCircle2 : type === 'error' ? AlertCircle : Info
   const toneClass =
     type === 'success'
-      ? 'border-emerald-600 bg-emerald-900 text-white'
+      ? 'border-[var(--success-border)] bg-[var(--success-bg)] text-[var(--success-ink)]'
       : type === 'error'
-      ? 'border-red-500 bg-red-900 text-white'
-      : 'border-[var(--primary)] bg-[var(--primary)] text-white'
+      ? 'border-[var(--danger-border)] bg-[var(--danger-solid)] text-[var(--danger-solid-ink)]'
+      : 'border-[var(--border)] bg-[var(--primary)] text-white'
 
   return (
     <aside

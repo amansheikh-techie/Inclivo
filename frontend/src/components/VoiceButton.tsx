@@ -24,7 +24,7 @@ export function VoiceButton({
       aria-pressed={isListening}
       className={`min-h-[60px] min-w-[60px] px-7 py-4 rounded-full font-bold inline-flex items-center justify-center gap-3 transition-colors text-base shadow-md cursor-pointer ${
         isListening
-          ? 'bg-red-700 hover:bg-red-800 text-white ring-4 ring-red-400/50'
+          ? 'bg-[var(--danger-solid)] text-[var(--danger-solid-ink)] ring-4 ring-[var(--danger-border)]'
           : 'bg-[var(--action)] hover:bg-[var(--action-hover)] text-[var(--action-ink)]'
       } disabled:opacity-50 disabled:cursor-not-allowed`}
     >
