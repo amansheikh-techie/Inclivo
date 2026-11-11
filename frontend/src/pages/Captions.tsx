@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Globe, Info } from 'lucide-react'
 import { useSpeechRecognition } from '../hooks/useSpeechRecognition'
 import { CaptionBox } from '../components/CaptionBox'
 
@@ -37,27 +38,35 @@ export function Captions() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8 flex flex-col gap-6">
-      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl sm:text-4xl font-black text-neutral-900 dark:text-neutral-100">
+    <div className="flex flex-col gap-6">
+      <header className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+        <div className="space-y-2">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--ink)]">
             {t('captions.title')}
           </h1>
-          <p className="text-neutral-600 dark:text-neutral-400 text-sm mt-1">
+          <p className="text-sm sm:text-base text-[var(--ink-muted)]">
             {t('captions.subtitle')}
+          </p>
+          <p className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--ink-muted)]">
+            <Info className="w-3.5 h-3.5 shrink-0 text-[var(--accent-text)]" aria-hidden="true" />
+            <span>{t('captions_ui.browser_speech_note')}</span>
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <label htmlFor="caption-lang-select" className="text-sm font-semibold">
-            Audio Language:
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
+          <label
+            htmlFor="caption-lang-select"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--ink)]"
+          >
+            <Globe className="w-4 h-4 shrink-0 text-[var(--accent-text)]" aria-hidden="true" />
+            <span>{t('captions_ui.audio_language')}:</span>
           </label>
           <select
             id="caption-lang-select"
             value={selectedLang}
             disabled={isListening}
             onChange={(e) => setSelectedLang(e.target.value)}
-            className="min-h-[44px] px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm font-semibold"
+            className="min-h-[44px] px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--ink)] text-sm font-semibold disabled:opacity-50"
           >
             {languages.map((l) => (
               <option key={l.code} value={l.code}>

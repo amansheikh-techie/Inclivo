@@ -1,42 +1,155 @@
 @import "tailwindcss";
 @import "leaflet/dist/leaflet.css";
 
-/* Sensory & Accessibility Modes */
+@custom-variant dark (&:where([data-mode~="dark"], [data-mode~="dark"] *));
+
+@theme {
+  --font-sans: "Inter Variable", "Inter", system-ui, -apple-system, sans-serif;
+  --color-primary: #173B70;
+  --color-secondary: #2878D0;
+  --color-action: #1F6BBF;
+  --color-accent: #24A69A;
+  --color-accent-text: #17766D;
+  --color-canvas: #F4F7FB;
+  --color-card: #FFFFFF;
+  --color-ink: #172B4D;
+}
+
 :root {
   --font-scale: 100%;
+  --bg: #F4F7FB;
+  --surface: #FFFFFF;
+  --surface-muted: #E8EFF8;
+  --border: #CBD7E8;
+  --ink: #172B4D;
+  --ink-muted: #445572;
+  --primary: #173B70;
+  --secondary: #2878D0;
+  --action: #1F6BBF;
+  --action-hover: #175294;
+  --action-ink: #FFFFFF;
+  --accent: #24A69A;
+  --accent-ink: #172B4D;
+  --accent-text: #17766D;
+  --ring: #1F6BBF;
+  --danger-bg: #FEF2F2;
+  --danger-ink: #991B1B;
+  --danger-border: #F87171;
+  --danger-solid: #B91C1C;
+  --danger-solid-ink: #FFFFFF;
+  --warn-bg: #FFFBEB;
+  --warn-ink: #78350F;
+  --warn-border: #F59E0B;
+  --success-bg: #115E59;
+  --success-ink: #FFFFFF;
+  --success-border: #24A69A;
 }
 
 html {
   font-size: var(--font-scale);
+  font-family: var(--font-sans);
+  background-color: var(--bg);
+  color: var(--ink);
 }
 
-/* High Contrast Mode */
-html[data-mode*="high-contrast"] {
+body {
+  background-color: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+}
+
+html[data-mode~="dark"] {
+  color-scheme: dark;
+  --bg: #0B1324;
+  --surface: #131E34;
+  --surface-muted: #1C2A45;
+  --border: #2C3E61;
+  --ink: #F1F5FB;
+  --ink-muted: #B4C4DC;
+  --primary: #1E4E96;
+  --secondary: #5BA0EE;
+  --action: #1F6BBF;
+  --action-hover: #2878D0;
+  --action-ink: #FFFFFF;
+  --accent: #24A69A;
+  --accent-ink: #172B4D;
+  --accent-text: #6CE2D6;
+  --ring: #7BB8FF;
+  --danger-bg: #3B0D14;
+  --danger-ink: #FECACA;
+  --danger-border: #F87171;
+  --danger-solid: #B91C1C;
+  --danger-solid-ink: #FFFFFF;
+  --warn-bg: #362205;
+  --warn-ink: #FDE68A;
+  --warn-border: #FBBF24;
+  --success-bg: #0F4C46;
+  --success-ink: #FFFFFF;
+  --success-border: #24A69A;
+}
+
+html[data-mode~="high-contrast"] {
+  color-scheme: dark;
+  --bg: #000000;
+  --surface: #000000;
+  --surface-muted: #121212;
+  --border: #FFFF00;
+  --ink: #FFFF00;
+  --ink-muted: #FFFFFF;
+  --primary: #000000;
+  --secondary: #FFFF00;
+  --action: #FFFF00;
+  --action-hover: #E6E600;
+  --action-ink: #000000;
+  --accent: #FFFF00;
+  --accent-ink: #000000;
+  --accent-text: #FFFF00;
+  --ring: #00FFFF;
+  --danger-bg: #000000;
+  --danger-ink: #FFFF00;
+  --danger-border: #FFFF00;
+  --danger-solid: #FFFF00;
+  --danger-solid-ink: #000000;
+  --warn-bg: #000000;
+  --warn-ink: #FFFF00;
+  --warn-border: #FFFF00;
+  --success-bg: #000000;
+  --success-ink: #FFFF00;
+  --success-border: #FFFF00;
+}
+
+html[data-mode~="high-contrast"] body,
+html[data-mode~="high-contrast"] main,
+html[data-mode~="high-contrast"] header,
+html[data-mode~="high-contrast"] aside,
+html[data-mode~="high-contrast"] nav,
+html[data-mode~="high-contrast"] footer,
+html[data-mode~="high-contrast"] article,
+html[data-mode~="high-contrast"] section {
   background-color: #000000 !important;
-  color: #ffff00 !important;
+  color: #FFFF00 !important;
+  border-color: #FFFF00 !important;
 }
 
-html[data-mode*="high-contrast"] body {
+html[data-mode~="high-contrast"] [data-accent-fill="true"],
+html[data-mode~="high-contrast"] [data-action-fill="true"] {
+  background-color: #FFFF00 !important;
+  color: #000000 !important;
+  border-color: #FFFF00 !important;
+}
+
+html[data-mode~="high-contrast"] input,
+html[data-mode~="high-contrast"] select,
+html[data-mode~="high-contrast"] textarea {
   background-color: #000000 !important;
-  color: #ffff00 !important;
+  color: #FFFFFF !important;
+  border: 2px solid #FFFF00 !important;
 }
 
-html[data-mode*="high-contrast"] * {
-  border-color: #ffff00 !important;
+html[data-mode~="large-text"] {
+  --font-scale: 125%;
 }
 
-html[data-mode*="high-contrast"] a,
-html[data-mode*="high-contrast"] button {
-  outline: 2px solid #ffff00 !important;
-  color: #ffff00 !important;
-}
-
-/* Large Text Mode */
-html[data-mode*="large-text"] {
-  --font-scale: 130%;
-}
-
-/* Reduced Motion Mode */
 @media (prefers-reduced-motion: reduce) {
   *, ::before, ::after {
     animation-duration: 0.01ms !important;
@@ -46,25 +159,23 @@ html[data-mode*="large-text"] {
   }
 }
 
-html[data-mode*="reduce-motion"] *,
-html[data-mode*="reduce-motion"] *::before,
-html[data-mode*="reduce-motion"] *::after {
+html[data-mode~="reduce-motion"] *,
+html[data-mode~="reduce-motion"] *::before,
+html[data-mode~="reduce-motion"] *::after {
   animation-duration: 0.01ms !important;
   animation-iteration-count: 1 !important;
   transition-duration: 0.01ms !important;
   scroll-behavior: auto !important;
 }
 
-/* Dyslexia Friendly Font */
-html[data-mode*="dyslexia"] body {
-  font-family: 'OpenDyslexic', 'Comic Sans MS', 'Arial', sans-serif !important;
-  letter-spacing: 0.08em;
-  word-spacing: 0.15em;
-  line-height: 1.8;
+html[data-mode~="dyslexia"] body {
+  font-family: "OpenDyslexic", "Comic Sans MS", "Verdana", sans-serif !important;
+  letter-spacing: 0.06em;
+  word-spacing: 0.14em;
+  line-height: 1.75;
 }
 
-/* Focus ring for all interactive elements */
 :focus-visible {
-  outline: 3px solid #2563eb;
+  outline: 3px solid var(--ring);
   outline-offset: 2px;
 }
