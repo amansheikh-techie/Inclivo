@@ -58,8 +58,8 @@ export function Schemes() {
   const filteredSchemes = schemes.filter((s) => {
     const matchesSearch =
       s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      s.eligibility.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      s.benefits.toLowerCase().includes(searchQuery.toLowerCase())
+      (s.eligibility ?? '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (s.benefits ?? '').toLowerCase().includes(searchQuery.toLowerCase())
 
     const matchesDisability =
       selectedDisability === 'all' || s.disability_type === 'all' || s.disability_type === selectedDisability
@@ -318,7 +318,7 @@ export function Schemes() {
                   </button>
 
                   <a
-                    href={s.apply_url}
+                    href={s.apply_url ?? '#'}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="min-h-[44px] px-5 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-emerald-500"
