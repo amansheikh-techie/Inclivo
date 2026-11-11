@@ -28,29 +28,17 @@ export function Report() {
 
     setSubmitting(true)
     try {
-      const res = await api.createReport({
-        issue_type: issueType,
-        description,
-        lat: coords.lat,
-        lng: coords.lng,
-      })
-      if (res.success) {
-        setReports((prev) => [
-          {
-            id: res.id,
-            issue_type: issueType,
-            description,
-            lat: coords.lat,
-            lng: coords.lng,
-            status: 'open',
-            upvotes: 1,
-            created_at: new Date().toISOString().slice(0, 10),
-          },
-          ...prev,
-        ])
-        setDescription('')
-        setToastMessage('Report submitted successfully! Thank you for contributing.')
-      }
+      const formData = new FormData()
+      formData.append('issue_type', issueType)
+      formData.append('description', description)
+      formData.append('lat', String(coords.lat))
+      formData.append('lng', String(coords.lng))
+      const created = await api.createReport(formData)
+      setReports((prev) => [created, ...prev])
+      setDescription('')
+      setToastMessage('Report submitted successfully! Thank you for contributing.')
+    } catch {
+      setToastMessage('Could not submit report. Please sign in and try again.')
     } finally {
       setSubmitting(false)
     }
