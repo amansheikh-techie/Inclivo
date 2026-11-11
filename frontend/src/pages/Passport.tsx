@@ -400,7 +400,7 @@ export function Passport() {
                       type="button"
                       onClick={() => void handleDeleteContact(c.id)}
                       aria-label={t('passport_ui.delete_contact_aria', { name: c.name })}
-                      className="px-3 py-2 text-xs text-red-700 dark:text-red-300"
+                      className="px-3 py-2 text-xs text-[var(--danger-ink)]"
                     >
                       <Trash2 className="w-4 h-4 shrink-0" aria-hidden="true" />
                     </SecondaryButton>
@@ -451,7 +451,7 @@ export function Passport() {
               {contactError && (
                 <p
                   role="alert"
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-700 dark:text-red-400"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--danger-ink)]"
                 >
                   <AlertCircle className="w-4 h-4 shrink-0" aria-hidden="true" />
                   <span>{contactError}</span>
