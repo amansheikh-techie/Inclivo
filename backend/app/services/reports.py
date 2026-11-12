@@ -3,6 +3,13 @@ from fastapi import HTTPException, status
 from app.core.supabase import get_supabase
 
 BUCKET_NAME = "report-photos"
+MIME_EXTENSIONS = {
+    "image/jpeg": "jpg",
+    "image/png": "png",
+    "image/webp": "webp",
+    "image/heic": "heic",
+    "image/heif": "heif",
+}
 
 
 def list_reports(status_filter: str | None = None) -> list[dict]:
@@ -24,12 +31,13 @@ def create_report(
     supabase = get_supabase()
     photo_url = None
     if photo_bytes and photo_mime:
-        ext = "png" if photo_mime == "image/png" else "jpg"
+        normalized_mime = photo_mime.split(";")[0].strip().lower()
+        ext = MIME_EXTENSIONS.get(normalized_mime, "jpg")
         path = f"{user_id}/{uuid.uuid4()}.{ext}"
         supabase.storage.from_(BUCKET_NAME).upload(
             path,
             photo_bytes,
-            {"content-type": photo_mime},
+            {"content-type": normalized_mime},
         )
         photo_url = supabase.storage.from_(BUCKET_NAME).get_public_url(path)
 
