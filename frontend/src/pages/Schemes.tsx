@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
   AlertCircle,
@@ -28,7 +29,8 @@ export function Schemes() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
 
-  const [searchQuery, setSearchQuery] = useState('')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const searchQuery = searchParams.get('q') ?? ''
   const [disabilityFilter, setDisabilityFilter] = useState('')
   const [stateFilter, setStateFilter] = useState('')
 
@@ -92,8 +94,18 @@ export function Schemes() {
 
   const hasFilters = Boolean(searchQuery || disabilityFilter || stateFilter)
 
+  const updateSearchQuery = (next: string) => {
+    const updated = new URLSearchParams(searchParams)
+    if (next) {
+      updated.set('q', next)
+    } else {
+      updated.delete('q')
+    }
+    setSearchParams(updated, { replace: true })
+  }
+
   const clearFilters = () => {
-    setSearchQuery('')
+    updateSearchQuery('')
     setDisabilityFilter('')
     setStateFilter('')
   }
@@ -290,7 +302,7 @@ export function Schemes() {
           <input
             type="search"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => updateSearchQuery(e.target.value)}
             placeholder={t('schemes.search_placeholder')}
             aria-label={t('schemes.search_placeholder')}
             className="w-full min-h-[44px] pl-10 pr-4 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--ink)] text-sm placeholder:text-[var(--ink-muted)]"

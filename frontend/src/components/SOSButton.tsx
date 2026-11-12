@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AlertTriangle, MessageSquare, X } from 'lucide-react'
-import { api } from '../lib/api'
+import { api, type EmergencyContact } from '../lib/api'
+import { supabase } from '../lib/supabase'
 
 export function SOSButton() {
   const { t } = useTranslation()
@@ -58,19 +59,26 @@ export function SOSButton() {
   }
 
   const sendCoordinates = async (lat: number, lng: number, openWhatsApp: boolean) => {
+    const mapsLink = `https://maps.google.com/?q=${lat},${lng}`
+    let contacts: EmergencyContact[] = []
     try {
-      await api.triggerSOS({ lat, lng })
+      const { data } = await supabase.auth.getSession()
+      if (data.session?.access_token) {
+        const res = await api.triggerSOS({ lat, lng })
+        contacts = res.contacts ?? []
+      }
     } catch {
       // Keep local SMS/WhatsApp sharing available even if API call fails
     }
-    const mapsLink = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}`
-    const msg = encodeURIComponent(
-      `Inclivo SOS: Please check on me at this location: ${mapsLink}`
-    )
-    setSmsHref(`sms:?body=${msg}`)
+
+    const firstPhone = contacts[0]?.phone?.trim() ?? ''
+    const waPhone = firstPhone.replace(/\D/g, '')
+    const msg = encodeURIComponent(t('sos.message', { url: mapsLink }))
+
+    setSmsHref(`sms:${firstPhone}?body=${msg}`)
     setStatusMessage(t('sos.dispatched'))
     if (openWhatsApp) {
-      window.open(`https://wa.me/?text=${msg}`, '_blank', 'noopener,noreferrer')
+      window.open(`https://wa.me/${waPhone}?text=${msg}`, '_blank', 'noopener,noreferrer')
     }
   }
 

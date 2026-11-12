@@ -120,7 +120,8 @@
     "dispatched": "Location logged and share link prepared for your contacts.",
     "cancelled": "Emergency alert cancelled.",
     "disclaimer": "Logs location & opens a message for your contacts — does not contact emergency services.",
-    "sms_action": "Open SMS"
+    "sms_action": "Open SMS",
+    "message": "Inclivo SOS: Please check on me at this location: {{url}}"
   },
   "footer": {
     "copyright": "© 2026 Inclivo. Accessible-first platform. WCAG 2.1 AA."

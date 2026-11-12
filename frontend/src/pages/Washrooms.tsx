@@ -25,7 +25,7 @@ type SortKey = 'rating' | 'verified' | 'distance'
 
 export function Washrooms() {
   const { t } = useTranslation()
-  const { coords, loading: geoLoading, getLocation } = useGeolocation()
+  const { coords, hasLocation, loading: geoLoading, getLocation } = useGeolocation()
   const isDemo = useDemoData()
 
   const [washrooms, setWashrooms] = useState<Washroom[]>([])
@@ -39,17 +39,23 @@ export function Washrooms() {
   const handleRetry = useCallback(() => {
     setLoading(true)
     setError(false)
+    const params = hasLocation
+      ? { lat: coords.lat, lng: coords.lng, radius_km: 5 }
+      : undefined
     api
-      .getWashrooms()
+      .getWashrooms(params)
       .then((data) => setWashrooms(data))
       .catch(() => setError(true))
       .finally(() => setLoading(false))
-  }, [])
+  }, [hasLocation, coords.lat, coords.lng])
 
   useEffect(() => {
     let active = true
+    const params = hasLocation
+      ? { lat: coords.lat, lng: coords.lng, radius_km: 5 }
+      : undefined
     api
-      .getWashrooms()
+      .getWashrooms(params)
       .then((data) => {
         if (active) setWashrooms(data)
       })
@@ -62,7 +68,7 @@ export function Washrooms() {
     return () => {
       active = false
     }
-  }, [])
+  }, [hasLocation, coords.lat, coords.lng])
 
   const filtered = washrooms
     .filter((w) => (verifiedOnly ? w.verified : true))
@@ -109,7 +115,10 @@ export function Washrooms() {
 
         <ActionButton
           type="button"
-          onClick={getLocation}
+          onClick={() => {
+            setSortBy('distance')
+            getLocation()
+          }}
           disabled={geoLoading}
         >
           <LocateFixed className="w-4 h-4 shrink-0" aria-hidden="true" />
