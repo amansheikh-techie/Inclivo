@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { Suspense, lazy, useState } from 'react'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { BottomNav } from './components/BottomNav'
@@ -7,15 +7,16 @@ import { Sidebar } from './components/Sidebar'
 import { SOSButton } from './components/SOSButton'
 import { TopBar } from './components/TopBar'
 import { useSensoryMode } from './hooks/useSensoryMode'
-import { About } from './pages/About'
-import { Assistant } from './pages/Assistant'
-import { Captions } from './pages/Captions'
 import { Home } from './pages/Home'
-import { Passport } from './pages/Passport'
-import { Places } from './pages/Places'
-import { Report } from './pages/Report'
-import { Schemes } from './pages/Schemes'
-import { Washrooms } from './pages/Washrooms'
+
+const About = lazy(() => import('./pages/About').then((m) => ({ default: m.About })))
+const Assistant = lazy(() => import('./pages/Assistant').then((m) => ({ default: m.Assistant })))
+const Captions = lazy(() => import('./pages/Captions').then((m) => ({ default: m.Captions })))
+const Passport = lazy(() => import('./pages/Passport').then((m) => ({ default: m.Passport })))
+const Places = lazy(() => import('./pages/Places').then((m) => ({ default: m.Places })))
+const Report = lazy(() => import('./pages/Report').then((m) => ({ default: m.Report })))
+const Schemes = lazy(() => import('./pages/Schemes').then((m) => ({ default: m.Schemes })))
+const Washrooms = lazy(() => import('./pages/Washrooms').then((m) => ({ default: m.Washrooms })))
 
 export default function App() {
   const { t } = useTranslation()
@@ -50,17 +51,29 @@ export default function App() {
             tabIndex={-1}
             className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 pb-24 sm:px-6 lg:pb-10"
           >
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/places" element={<Places />} />
-              <Route path="/washrooms" element={<Washrooms />} />
-              <Route path="/assistant" element={<Assistant />} />
-              <Route path="/captions" element={<Captions />} />
-              <Route path="/schemes" element={<Schemes />} />
-              <Route path="/report" element={<Report />} />
-              <Route path="/passport" element={<Passport />} />
-              <Route path="/about" element={<About />} />
-            </Routes>
+            <Suspense
+              fallback={
+                <div
+                  role="status"
+                  aria-live="polite"
+                  className="py-12 text-center text-sm font-medium text-[var(--ink-muted)]"
+                >
+                  {t('common.loading', 'Loading...')}
+                </div>
+              }
+            >
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/places" element={<Places />} />
+                <Route path="/washrooms" element={<Washrooms />} />
+                <Route path="/assistant" element={<Assistant />} />
+                <Route path="/captions" element={<Captions />} />
+                <Route path="/schemes" element={<Schemes />} />
+                <Route path="/report" element={<Report />} />
+                <Route path="/passport" element={<Passport />} />
+                <Route path="/about" element={<About />} />
+              </Routes>
+            </Suspense>
           </main>
 
           <footer className="border-t border-[var(--border)] bg-[var(--surface)] px-4 py-6 pb-24 text-center text-sm text-[var(--ink-muted)] lg:pb-6">
