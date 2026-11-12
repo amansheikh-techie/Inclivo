@@ -25,7 +25,7 @@ async def create_report(
     photo_mime = None
     if photo is not None:
         photo_bytes = await validate_image_upload(photo)
-        photo_mime = photo.content_type
+        photo_mime = (photo.content_type or "").split(";")[0].strip().lower()
     return reports_service.create_report(
         user_id=user_id,
         issue_type=issue_type,
