@@ -18,7 +18,7 @@ import {
   type EmergencyContact,
   type PassportData,
 } from '../lib/api'
-import { supabase } from '../lib/supabase'
+import { isSupabaseConfigured, supabase } from '../lib/supabase'
 import { useSensoryMode } from '../hooks/useSensoryMode'
 import { Toast } from '../components/Toast'
 import {
@@ -246,6 +246,15 @@ export function Passport() {
               <LogOut className="w-4 h-4 shrink-0" aria-hidden="true" />
               <span>{t('passport_ui.sign_out')}</span>
             </SecondaryButton>
+          </div>
+        ) : !isSupabaseConfigured ? (
+          <div className="flex flex-col gap-2">
+            <h2 className="text-base font-bold text-[var(--ink)]">
+              {t('passport_ui.auth_title')}
+            </h2>
+            <p className="text-sm text-[var(--ink-muted)]" role="status">
+              Sign-in is not configured in this build.
+            </p>
           </div>
         ) : (
           <form onSubmit={handleSendOtp} className="flex flex-col gap-3">

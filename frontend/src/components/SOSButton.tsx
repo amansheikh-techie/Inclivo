@@ -62,10 +62,12 @@ export function SOSButton() {
     const mapsLink = `https://maps.google.com/?q=${lat},${lng}`
     let contacts: EmergencyContact[] = []
     try {
-      const { data } = await supabase.auth.getSession()
-      if (data.session?.access_token) {
-        const res = await api.triggerSOS({ lat, lng })
-        contacts = res.contacts ?? []
+      if (supabase) {
+        const { data } = await supabase.auth.getSession()
+        if (data.session?.access_token) {
+          const res = await api.triggerSOS({ lat, lng })
+          contacts = res.contacts ?? []
+        }
       }
     } catch {
       // Keep local SMS/WhatsApp sharing available even if API call fails
