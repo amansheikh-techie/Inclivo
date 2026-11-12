@@ -29,9 +29,8 @@ async def describe_image(
     lang: str = Form("en"),
 ):
     image_bytes = await validate_image_upload(image)
-    description = await gemini.describe_image(
-        image_bytes, image.content_type or "image/jpeg", lang
-    )
+    mime_type = (image.content_type or "image/jpeg").split(";")[0].strip().lower()
+    description = await gemini.describe_image(image_bytes, mime_type, lang)
     return DescribeImageResponse(description=description)
 
 
@@ -43,9 +42,8 @@ async def ocr(
     lang: str = Form("en"),
 ):
     image_bytes = await validate_image_upload(image)
-    text, summary = await gemini.ocr_image(
-        image_bytes, image.content_type or "image/jpeg", lang
-    )
+    mime_type = (image.content_type or "image/jpeg").split(";")[0].strip().lower()
+    text, summary = await gemini.ocr_image(image_bytes, mime_type, lang)
     return OcrResponse(text=text, summary=summary)
 
 
