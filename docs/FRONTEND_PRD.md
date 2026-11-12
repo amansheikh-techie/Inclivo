@@ -48,3 +48,4 @@
 - Full PWA service worker and offline mutation queue.
 - Turn-by-turn indoor navigation and voice-guided routing inside venues.
 - Additional regional Indian languages and offline speech recognition fallback.
+

@@ -58,3 +58,4 @@
 - Automated pytest integration suite and CI checks.
 - PostGIS spatial indexing for large-scale nationwide place/washroom queries.
 - Crowd-verified moderation workflow for resolving community reports.
+
