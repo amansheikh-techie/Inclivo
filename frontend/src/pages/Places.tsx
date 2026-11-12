@@ -25,7 +25,7 @@ import {
 
 export function Places() {
   const { t } = useTranslation()
-  const { coords, loading: geoLoading, getLocation } = useGeolocation()
+  const { coords, hasLocation, loading: geoLoading, getLocation } = useGeolocation()
   const isDemo = useDemoData()
 
   const [places, setPlaces] = useState<Place[]>([])
@@ -43,17 +43,23 @@ export function Places() {
   const handleRetry = useCallback(() => {
     setLoading(true)
     setError(false)
+    const params = hasLocation
+      ? { lat: coords.lat, lng: coords.lng, radius_km: 5 }
+      : undefined
     api
-      .getPlaces()
+      .getPlaces(params)
       .then((data) => setPlaces(data))
       .catch(() => setError(true))
       .finally(() => setLoading(false))
-  }, [])
+  }, [hasLocation, coords.lat, coords.lng])
 
   useEffect(() => {
     let active = true
+    const params = hasLocation
+      ? { lat: coords.lat, lng: coords.lng, radius_km: 5 }
+      : undefined
     api
-      .getPlaces()
+      .getPlaces(params)
       .then((data) => {
         if (active) setPlaces(data)
       })
@@ -66,7 +72,7 @@ export function Places() {
     return () => {
       active = false
     }
-  }, [])
+  }, [hasLocation, coords.lat, coords.lng])
 
   const hasActiveFilters =
     filterWheelchair || filterRamp || filterElevator || filterParking || filterQuiet
@@ -79,14 +85,22 @@ export function Places() {
     setFilterQuiet(false)
   }
 
-  const filteredPlaces = places.filter((p) => {
-    if (filterRamp && !p.has_ramp) return false
-    if (filterElevator && !p.has_elevator) return false
-    if (filterParking && !p.accessible_parking) return false
-    if (filterWheelchair && !p.wheelchair_friendly) return false
-    if (filterQuiet && !p.quiet) return false
-    return true
-  })
+  const filteredPlaces = places
+    .filter((p) => {
+      if (filterRamp && !p.has_ramp) return false
+      if (filterElevator && !p.has_elevator) return false
+      if (filterParking && !p.accessible_parking) return false
+      if (filterWheelchair && !p.wheelchair_friendly) return false
+      if (filterQuiet && !p.quiet) return false
+      return true
+    })
+    .slice()
+    .sort((a, b) => {
+      if (a.distance_km != null || b.distance_km != null) {
+        return (a.distance_km ?? 9999) - (b.distance_km ?? 9999)
+      }
+      return 0
+    })
 
   const selectedPlace =
     filteredPlaces.find((p) => p.id === selectedPlaceId) || filteredPlaces[0] || null
