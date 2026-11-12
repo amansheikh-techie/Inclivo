@@ -45,15 +45,39 @@ def create_report(
     return res.data[0]
 
 
-def upvote_report(report_id: str) -> dict:
+def upvote_report(report_id: str, user_id: str) -> dict:
     supabase = get_supabase()
-    existing = supabase.table("reports").select("*").eq("id", report_id).execute().data or []
+    existing = supabase.table("reports").select("id").eq("id", report_id).execute().data or []
     if not existing:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Report not found",
         )
-    new_votes = (existing[0].get("upvotes") or 0) + 1
+    try:
+        supabase.table("report_upvotes").insert(
+            {"report_id": report_id, "user_id": user_id}
+        ).execute()
+    except Exception as exc:
+        msg = str(exc).lower()
+        if (
+            getattr(exc, "code", None) == "23505"
+            or "23505" in msg
+            or "duplicate" in msg
+            or "already exists" in msg
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Already upvoted",
+            ) from exc
+        raise
+
+    count_res = (
+        supabase.table("report_upvotes")
+        .select("report_id", count="exact")
+        .eq("report_id", report_id)
+        .execute()
+    )
+    new_votes = count_res.count if count_res.count is not None else len(count_res.data or [])
     res = (
         supabase.table("reports")
         .update({"upvotes": new_votes})

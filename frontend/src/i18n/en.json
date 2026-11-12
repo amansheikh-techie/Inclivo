@@ -244,6 +244,7 @@
     "submit_success": "Report submitted. Thank you for improving accessibility!",
     "submit_error": "Could not submit report. Please check your connection and try again.",
     "upvote_error": "Could not record upvote right now.",
+    "already_upvoted": "You have already upvoted this report.",
     "reported_on": "Reported on",
     "coordinates": "Coordinates",
     "upvote_aria": "Upvote issue {{issue}}. Current upvotes: {{count}}",

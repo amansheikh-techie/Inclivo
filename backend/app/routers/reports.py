@@ -38,6 +38,6 @@ async def create_report(
 
 
 @router.post("/{report_id}/upvote", response_model=ReportOut)
-def upvote_report(report_id: str, _: str = Depends(get_current_user)):
-    return reports_service.upvote_report(report_id)
+def upvote_report(report_id: str, user_id: str = Depends(get_current_user)):
+    return reports_service.upvote_report(report_id, user_id)
 
