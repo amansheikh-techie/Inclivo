@@ -1,0 +1,123 @@
+[
+  {
+    "name": "ADIP Scheme (Assistance to Disabled Persons)",
+    "description": "Provides free or subsidised assistive devices such as wheelchairs, motorized tricycles, braille kits, and hearing aids.",
+    "eligibility": "Indian citizen with 40% or more disability and monthly family income under Rs 20,000.",
+    "benefits": "Free or subsidised aids, motorized tricycles, braille kits, and hearing aids.",
+    "disability_type": "all",
+    "state": "All India",
+    "apply_url": "https://adip.depwd.gov.in",
+    "name_hi": "एडीआईपी योजना (दिव्यांगजनों को सहायता)",
+    "name_te": "ADIP పథకం (దివ్యాంగులకు సహాయ పరికరాలు)",
+    "name_ta": "ADIP திட்டம் (மாற்றுத்திறனாளிகளுக்கான உதவி)"
+  },
+  {
+    "name": "Aasara Pension for Persons with Disabilities",
+    "description": "Monthly social security pension transferred directly to bank accounts of persons with disabilities in Telangana.",
+    "eligibility": "Telangana resident with SADAREM certificate showing 40% or more disability.",
+    "benefits": "Monthly financial aid of Rs 4,016 directly transferred to bank account.",
+    "disability_type": "all",
+    "state": "Telangana",
+    "apply_url": "https://aasara.telangana.gov.in",
+    "name_hi": "आसरा दिव्यांग पेंशन योजना (तेलंगाना)",
+    "name_te": "ఆసరా దివ్యాంగుల పెన్షన్ పథకం",
+    "name_ta": "ஆசரா மாற்றுத்திறனாளிகள் ஓய்வூதியத் திட்டம்"
+  },
+  {
+    "name": "Unique Disability ID (UDID) Card",
+    "description": "Single national identity card for persons with disabilities to access welfare schemes, travel concessions, and healthcare.",
+    "eligibility": "Any Indian citizen with a verified benchmark disability.",
+    "benefits": "National unified digital card for availing travel concessions, state welfare, and healthcare.",
+    "disability_type": "all",
+    "state": "All India",
+    "apply_url": "https://www.swavlambancard.gov.in",
+    "name_hi": "विशिष्ट दिव्यांगता पहचान पत्र (UDID)",
+    "name_te": "ప్రత్యేక దివ్యాంగుల గుర్తింపు కార్డు (UDID)",
+    "name_ta": "தனித்துவ மாற்றுத்திறனாளி அடையாள அட்டை (UDID)"
+  },
+  {
+    "name": "National Fellowship for Persons with Disabilities (NFPwD)",
+    "description": "Fellowship grant supporting students with benchmark disabilities pursuing M.Phil. and Ph.D. degrees.",
+    "eligibility": "Students with 40% or more disability pursuing regular M.Phil. or Ph.D. in Indian universities.",
+    "benefits": "Monthly stipend of Rs 31,000 to Rs 35,000 plus contingency allowance for up to 5 years.",
+    "disability_type": "all",
+    "state": "All India",
+    "apply_url": "https://ugcnet.nta.ac.in",
+    "name_hi": "दिव्यांगजनों के लिए राष्ट्रीय फेलोशिप (NFPwD)",
+    "name_te": "దివ్యాంగుల జాతీయ ఫెలోషిప్ (NFPwD)",
+    "name_ta": "மாற்றுத்திறனாளிகளுக்கான தேசிய உதவித்தொகை (NFPwD)"
+  },
+  {
+    "name": "Post-Matric Scholarship for Students with Disabilities",
+    "description": "Central scholarship covering tuition, maintenance allowance, and reader/escort charges for higher secondary and college students.",
+    "eligibility": "Indian students with 40%+ disability in Class 11 through postgraduate courses with annual family income under Rs 2.5 lakh.",
+    "benefits": "Maintenance allowance, book grant, and disability-specific assistive allowances.",
+    "disability_type": "all",
+    "state": "All India",
+    "apply_url": "https://scholarships.gov.in",
+    "name_hi": "दिव्यांग छात्रों के लिए पोस्ट-मैट्रिक छात्रवृत्ति",
+    "name_te": "దివ్యాంగ విద్యార్థులకు పోస్ట్-మెట్రిక్ స్కాలర్‌షిప్",
+    "name_ta": "மாற்றுத்திறனாளி மாணவர்களுக்கான மெட்ரிக் பிந்தைய கல்வி உதவித்தொகை"
+  },
+  {
+    "name": "Indira Gandhi National Disability Pension Scheme (IGNDPS)",
+    "description": "Central monthly pension for adults with severe or multiple disabilities belonging to Below Poverty Line households.",
+    "eligibility": "Adults aged 18-79 with 80%+ disability or multiple disabilities from BPL households.",
+    "benefits": "Monthly pension support credited directly to the beneficiary's bank or post office account.",
+    "disability_type": "all",
+    "state": "All India",
+    "apply_url": "https://nsap.nic.in",
+    "name_hi": "इंदिरा गांधी राष्ट्रीय दिव्यांग पेंशन योजना",
+    "name_te": "ఇందిరా గాంధీ జాతీయ దివ్యాంగుల పెన్షన్ పథకం",
+    "name_ta": "இந்திரா காந்தி தேசிய மாற்றுத்திறனாளிகள் ஓய்வூதியத் திட்டம்"
+  },
+  {
+    "name": "TGSRTC Free & Concessional Bus Pass for PwDs",
+    "description": "Telangana State Road Transport Corporation pass offering free city travel and discounted intercity fares.",
+    "eligibility": "Telangana residents with a valid SADAREM or UDID disability certificate (40%+).",
+    "benefits": "Free travel on Palle Velugu and City Ordinary buses; 50% concession on Express/Deluxe services.",
+    "disability_type": "mobility",
+    "state": "Telangana",
+    "apply_url": "https://tgsrtcpass.com",
+    "name_hi": "टीजीएसआरटीसी दिव्यांग निःशुल्क बस पास (तेलंगाना)",
+    "name_te": "టీజీఎస్ఆర్టీసీ దివ్యాంగుల ఉచిత బస్సు పాస్",
+    "name_ta": "TGSRTC மாற்றுத்திறனாளிகள் இலவச பேருந்து பயண அட்டை"
+  },
+  {
+    "name": "Niramaya Health Insurance Scheme",
+    "description": "Affordable health insurance for persons with autism, cerebral palsy, intellectual disability, and multiple disabilities.",
+    "eligibility": "Persons with disabilities covered under the National Trust Act with a valid disability certificate.",
+    "benefits": "Health coverage up to Rs 1,00,000 per year including OPD, therapy, and hospitalization.",
+    "disability_type": "cognitive",
+    "state": "All India",
+    "apply_url": "https://thenationaltrust.gov.in",
+    "name_hi": "निरामया स्वास्थ्य बीमा योजना",
+    "name_te": "నిరామయ ఆరోగ్య బీమా పథకం",
+    "name_ta": "நிராமயா மருத்துவ காப்பீட்டுத் திட்டம்"
+  },
+  {
+    "name": "Sugamya Pustakalaya (Accessible Online Library)",
+    "description": "National online library offering books and educational content in DAISY audio, Braille-ready, and large-print formats.",
+    "eligibility": "Persons with visual impairment, print disabilities, or low vision.",
+    "benefits": "Free access to hundreds of thousands of accessible books across Indian languages.",
+    "disability_type": "visual",
+    "state": "All India",
+    "apply_url": "https://library.daisyindia.org",
+    "name_hi": "सुगम्य पुस्तकालय (सुलभ ऑनलाइन लाइब्रेरी)",
+    "name_te": "సుగమ్య పుస్తకాలయం (అందుబాటులో ఉన్న ఆన్‌లైన్ లైబ్రరీ)",
+    "name_ta": "சுகம்யா புத்தகாலயா (அணுகக்கூடிய ஆன்லைன் நூலகம்)"
+  },
+  {
+    "name": "Cochlear Implant Assistance under ADIP",
+    "description": "Financial and surgical support for cochlear implants and post-operative speech therapy for children with severe hearing loss.",
+    "eligibility": "Children under 5 years with bilateral severe-to-profound sensorineural hearing loss and family income under Rs 20,000/month.",
+    "benefits": "Up to Rs 6,00,000 per child covering implant device, surgery, and mapping/rehabilitation.",
+    "disability_type": "hearing",
+    "state": "All India",
+    "apply_url": "https://adip.depwd.gov.in",
+    "name_hi": "एडीआईपी के अंतर्गत कॉक्लियर इम्प्लांट सहायता",
+    "name_te": "ADIP కింద కాక్లియర్ ఇంప్లాంట్ సహాయం",
+    "name_ta": "ADIP திட்டத்தின் கீழ் காக்லியர் இம்ப்லாண்ட் உதவி"
+  }
+]
+

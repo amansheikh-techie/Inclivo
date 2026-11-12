@@ -1,0 +1,75 @@
+[
+  {
+    "name": "Secunderabad Railway Station Accessible Toilet",
+    "lat": 17.4344,
+    "lng": 78.5017,
+    "address": "Platform 1, Secunderabad Junction, Hyderabad",
+    "cleanliness_rating": 4.5,
+    "verified": true,
+    "last_verified": "2026-11-01"
+  },
+  {
+    "name": "Hussain Sagar Lake Public Restroom",
+    "lat": 17.4239,
+    "lng": 78.4738,
+    "address": "Necklace Road Promenade, Tank Bund, Hyderabad",
+    "cleanliness_rating": 4.0,
+    "verified": true,
+    "last_verified": "2026-10-28"
+  },
+  {
+    "name": "HITEC City Metro Station Restroom",
+    "lat": 17.4474,
+    "lng": 78.3762,
+    "address": "Concourse Level, HITEC City Metro, Hyderabad",
+    "cleanliness_rating": 4.8,
+    "verified": true,
+    "last_verified": "2026-11-08"
+  },
+  {
+    "name": "Lumbini Park Accessible Washroom",
+    "lat": 17.4101,
+    "lng": 78.4729,
+    "address": "Opp Secretariat, Khairatabad, Hyderabad",
+    "cleanliness_rating": 3.7,
+    "verified": false,
+    "last_verified": "2026-09-15"
+  },
+  {
+    "name": "Rajiv Gandhi International Airport Arrivals Restroom",
+    "lat": 17.2403,
+    "lng": 78.4294,
+    "address": "Arrivals Terminal, Shamshabad, Hyderabad",
+    "cleanliness_rating": 4.9,
+    "verified": true,
+    "last_verified": "2026-11-10"
+  },
+  {
+    "name": "MGBS Imlibun Accessible Restroom",
+    "lat": 17.3782,
+    "lng": 78.4813,
+    "address": "Mahatma Gandhi Bus Station, Gowliguda, Hyderabad",
+    "cleanliness_rating": 3.9,
+    "verified": true,
+    "last_verified": "2026-10-20"
+  },
+  {
+    "name": "GVK One Mall Ground Floor Accessible Washroom",
+    "lat": 17.4192,
+    "lng": 78.4485,
+    "address": "Rd Number 1, Banjara Hills, Hyderabad",
+    "cleanliness_rating": 4.7,
+    "verified": true,
+    "last_verified": "2026-11-05"
+  },
+  {
+    "name": "Paradise Metro Station Accessible Restroom",
+    "lat": 17.4435,
+    "lng": 78.4858,
+    "address": "Concourse Level, Paradise Circle, Secunderabad",
+    "cleanliness_rating": 4.6,
+    "verified": true,
+    "last_verified": "2026-11-06"
+  }
+]
+
