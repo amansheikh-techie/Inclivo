@@ -3,6 +3,7 @@ import placesMock from '../mocks/places.json'
 import washroomsMock from '../mocks/washrooms.json'
 import schemesMock from '../mocks/schemes.json'
 import { supabase } from './supabase'
+import i18n from '../i18n'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
@@ -259,9 +260,10 @@ export const api = {
       { reply: `Assistant received: "${message}". All Inclivo accessibility features are ready to assist you.` }
     ),
 
-  describeImage: (file: File) => {
+  describeImage: (file: File, lang = i18n.language || 'en') => {
     const formData = new FormData()
     formData.append('image', file)
+    formData.append('lang', lang)
     return fetchApi<{ description: string }>(
       '/api/assistant/describe-image',
       { method: 'POST', body: formData },
@@ -269,9 +271,10 @@ export const api = {
     )
   },
 
-  ocrImage: (file: File) => {
+  ocrImage: (file: File, lang = i18n.language || 'en') => {
     const formData = new FormData()
     formData.append('image', file)
+    formData.append('lang', lang)
     return fetchApi<{ text: string; summary: string }>(
       '/api/assistant/ocr',
       { method: 'POST', body: formData },
