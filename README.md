@@ -165,4 +165,4 @@ Full details: [`docs/BACKEND_PRD.md`](docs/BACKEND_PRD.md) and [`docs/FRONTEND_P
 - **Aman** – Backend, documentation
 
 ## Licence
-Add a licence (e.g., MIT) before publishing.
+MIT License — see [`LICENSE`](LICENSE).
