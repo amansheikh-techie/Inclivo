@@ -23,7 +23,7 @@
 
 ### 2. Accessible Washroom Finder (`/washrooms`)
 - Verified and community-reported accessible public restrooms.
-- Cleanliness star ratings, last-checked verification date, fee indicators.
+- Cleanliness star ratings and last-checked verification date.
 - Distance and rating sorting.
 
 ### 3. Voice-First AI Assistant (`/assistant`)
@@ -54,10 +54,10 @@
 ### 7. Emergency SOS (`/`)
 - Universal floating emergency SOS button present on all pages.
 - 2-second hold trigger with a 5-second cancellation grace window.
-- Auto-fetches GPS coordinates, sends emergency alert to backend (`POST /api/sos`), and launches SMS/WhatsApp broadcast to trusted contacts.
+- Auto-fetches GPS coordinates, calls `POST /api/sos` when signed in, and opens SMS/WhatsApp with the first saved emergency contact (falling back to a generic location message if logged out, offline, or no contacts exist).
 
 ### 8. Sensory & Display Modes
-- High contrast (yellow/black), Large text (130%), Reduced motion, Dyslexia-friendly font.
+- High contrast (yellow/black), Large text (125%), Reduced motion, Dyslexia-friendly font.
 - Persisted in `localStorage` and toggled via CSS variables and `data-mode` HTML attributes.
 
 ---

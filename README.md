@@ -30,21 +30,21 @@ One platform, many tools: accessible by design, multilingual and AI-powered.
 - **Community Reporting** – report broken ramps and inaccessible facilities.
 - **Accessibility Passport** – saved preferences for personalised results.
 - **Emergency Assistance (SOS)** – share live location with trusted contacts.
-- **Sensory-Friendly Mode** – high contrast, large text, reduced motion, quiet places.
-- **PWA / offline support** – installable, caches schemes and recent places.
+- **Sensory-Friendly Mode** – high contrast, large text (125%), reduced motion, dyslexia font, quiet places filter.
+- **Offline fallback data for core finders** – built-in mock fallback data for places, washrooms, schemes, and reports when the backend is unreachable.
 
 | Feature | Status |
 |---|---|
-| Place Finder | _update_ |
-| Washroom Finder | _update_ |
-| Blind Assistant | _update_ |
-| Live Captions | _update_ |
-| Multilingual | _update_ |
-| Schemes Finder | _update_ |
-| Community Reporting | _update_ |
-| Accessibility Passport | _update_ |
-| SOS | _update_ |
-| Sensory Mode | _update_ |
+| Place Finder | Implemented (`GET /api/places`, map + filters + geolocation sorting) |
+| Washroom Finder | Implemented (`GET /api/washrooms`, ratings + verification + geolocation sorting) |
+| Blind Assistant | Implemented (`POST /api/assistant/chat`, `/describe-image`, `/ocr` + Web Speech) |
+| Live Captions | Implemented (Browser Web Speech API + `.txt` export) |
+| Multilingual | Implemented (`en`, `hi`, `te`, `ta` UI + scheme/assistant localization) |
+| Schemes Finder | Implemented (`GET /api/schemes`, `POST /api/schemes/match`, `POST /api/assistant/simplify`) |
+| Community Reporting | Implemented (`GET/POST /api/reports`, `POST /api/reports/{id}/upvote` with 1-vote/user) |
+| Accessibility Passport | Implemented (`GET/PUT /api/passport` + Supabase OTP auth + preference sync) |
+| SOS | Implemented (`POST /api/sos` + SMS/WhatsApp share with saved contact & fallback) |
+| Sensory Mode | Implemented (`dark`, `high-contrast`, `large-text`, `reduce-motion`, `dyslexia`) |
 
 ## Tech Stack
 | Layer | Technology |
