@@ -79,7 +79,15 @@ create table if not exists sos_events (
   created_at timestamptz default now()
 );
 
+create table if not exists report_upvotes (
+  report_id uuid references reports(id) on delete cascade,
+  user_id uuid references auth.users(id) on delete cascade,
+  created_at timestamptz default now(),
+  primary key (report_id, user_id)
+);
+
 alter table reports enable row level security;
+alter table report_upvotes enable row level security;
 alter table passports enable row level security;
 alter table emergency_contacts enable row level security;
 alter table sos_events enable row level security;
@@ -92,6 +100,12 @@ create policy "Users insert own reports"
 
 create policy "Users update own reports"
   on reports for update using (auth.uid() = user_id);
+
+create policy "Report upvotes are publicly readable"
+  on report_upvotes for select using (true);
+
+create policy "Users insert own report upvotes"
+  on report_upvotes for insert with check (auth.uid() = user_id);
 
 create policy "Users manage own passport"
   on passports for all using (auth.uid() = user_id) with check (auth.uid() = user_id);

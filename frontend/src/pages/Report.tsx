@@ -115,8 +115,12 @@ export function Report() {
       setReports((prev) =>
         prev.map((r) => (r.id === id ? { ...r, upvotes: updated.upvotes } : r)),
       )
-    } catch {
-      setToast({ message: t('report_ui.upvote_error'), type: 'error' })
+    } catch (err) {
+      const isConflict = err instanceof Error && err.message.includes('409')
+      setToast({
+        message: isConflict ? t('report_ui.already_upvoted') : t('report_ui.upvote_error'),
+        type: isConflict ? 'info' : 'error',
+      })
     }
   }
 
