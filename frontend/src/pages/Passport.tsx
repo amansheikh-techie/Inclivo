@@ -19,6 +19,7 @@ import {
   type PassportData,
 } from '../lib/api'
 import { supabase } from '../lib/supabase'
+import { useSensoryMode } from '../hooks/useSensoryMode'
 import { Toast } from '../components/Toast'
 import {
   ActionButton,
@@ -29,8 +30,9 @@ import {
 } from '../components/ui'
 
 export function Passport() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const isDemo = useDemoData()
+  const { setMode } = useSensoryMode()
 
   const [userEmail, setUserEmail] = useState<string | null>(null)
   const [authLoading, setAuthLoading] = useState(() => Boolean(supabase))
@@ -63,15 +65,29 @@ export function Passport() {
     type: 'success' | 'error' | 'info'
   } | null>(null)
 
+  const applyPassportPreferences = useCallback(
+    (p: PassportData) => {
+      if (p.preferred_language) {
+        void i18n.changeLanguage(p.preferred_language)
+      }
+      setMode('large-text', p.font_size === 'large')
+      setMode('reduce-motion', Boolean(p.sensory_mode))
+    },
+    [i18n, setMode]
+  )
+
   const loadPassport = useCallback(() => {
     setPassportLoading(true)
     setPassportError(false)
     api
       .getPassport()
-      .then((p) => setPassport(p))
+      .then((p) => {
+        setPassport(p)
+        applyPassportPreferences(p)
+      })
       .catch(() => setPassportError(true))
       .finally(() => setPassportLoading(false))
-  }, [])
+  }, [applyPassportPreferences])
 
   const loadContacts = useCallback(() => {
     setContactsLoading(true)
@@ -152,6 +168,7 @@ export function Passport() {
     try {
       const saved = await api.savePassport(passport)
       setPassport(saved)
+      applyPassportPreferences(saved)
       setToast({ message: t('passport_ui.save_success'), type: 'success' })
     } catch {
       setToast({ message: t('passport_ui.save_error'), type: 'error' })
