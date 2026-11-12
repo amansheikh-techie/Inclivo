@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   AlertCircle,
@@ -33,11 +33,12 @@ export function Passport() {
   const isDemo = useDemoData()
 
   const [userEmail, setUserEmail] = useState<string | null>(null)
+  const [authLoading, setAuthLoading] = useState(() => Boolean(supabase))
   const [authEmail, setAuthEmail] = useState('')
   const [sendingOtp, setSendingOtp] = useState(false)
 
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(false)
+  const [passportLoading, setPassportLoading] = useState(false)
+  const [passportError, setPassportError] = useState(false)
   const [saving, setSaving] = useState(false)
 
   const [passport, setPassport] = useState<PassportData>({
@@ -50,6 +51,8 @@ export function Passport() {
   })
 
   const [contacts, setContacts] = useState<EmergencyContact[]>([])
+  const [contactsLoading, setContactsLoading] = useState(false)
+  const [contactsError, setContactsError] = useState(false)
   const [contactName, setContactName] = useState('')
   const [contactPhone, setContactPhone] = useState('')
   const [contactError, setContactError] = useState<string | null>(null)
@@ -60,46 +63,62 @@ export function Passport() {
     type: 'success' | 'error' | 'info'
   } | null>(null)
 
+  const loadPassport = useCallback(() => {
+    setPassportLoading(true)
+    setPassportError(false)
+    api
+      .getPassport()
+      .then((p) => setPassport(p))
+      .catch(() => setPassportError(true))
+      .finally(() => setPassportLoading(false))
+  }, [])
+
+  const loadContacts = useCallback(() => {
+    setContactsLoading(true)
+    setContactsError(false)
+    api
+      .getContacts()
+      .then((c) => setContacts(c))
+      .catch(() => setContactsError(true))
+      .finally(() => setContactsLoading(false))
+  }, [])
+
   useEffect(() => {
+    if (!supabase) return
     let active = true
 
-    if (supabase) {
-      supabase.auth.getUser().then(({ data }) => {
-        if (active && data.user?.email) {
-          setUserEmail(data.user.email)
+    supabase.auth
+      .getUser()
+      .then(({ data }) => {
+        if (!active) return
+        const email = data.user?.email ?? null
+        setUserEmail(email)
+        if (email) {
+          loadPassport()
+          loadContacts()
         }
       })
-    }
-
-    Promise.all([api.getPassport(), api.getContacts()])
-      .then(([p, c]) => {
-        if (!active) return
-        setPassport(p)
-        setContacts(c)
-      })
-      .catch(() => {
-        if (active) setError(true)
-      })
       .finally(() => {
-        if (active) setLoading(false)
+        if (active) setAuthLoading(false)
       })
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!active) return
+      const email = session?.user?.email ?? null
+      setUserEmail(email)
+      if (email) {
+        loadPassport()
+        loadContacts()
+      } else {
+        setContacts([])
+      }
+    })
 
     return () => {
       active = false
+      listener.subscription.unsubscribe()
     }
-  }, [])
-
-  const handleRetry = () => {
-    setLoading(true)
-    setError(false)
-    Promise.all([api.getPassport(), api.getContacts()])
-      .then(([p, c]) => {
-        setPassport(p)
-        setContacts(c)
-      })
-      .catch(() => setError(true))
-      .finally(() => setLoading(false))
-  }
+  }, [loadPassport, loadContacts])
 
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -216,6 +235,9 @@ export function Passport() {
             <h2 className="text-base font-bold text-[var(--ink)]">
               {t('passport_ui.auth_title')}
             </h2>
+            <p className="text-sm text-[var(--ink-muted)]">
+              {t('passport_ui.auth_desc')}
+            </p>
             <div className="flex flex-col sm:flex-row gap-2">
               <input
                 type="email"
@@ -234,14 +256,17 @@ export function Passport() {
         )}
       </Card>
 
-      {loading ? (
+      {authLoading ? (
         <StateMessage kind="loading" />
-      ) : error ? (
-        <StateMessage kind="error" onRetry={handleRetry} />
-      ) : (
+      ) : userEmail ? (
         <>
           <Card>
-            <form onSubmit={handleSavePassport} className="flex flex-col gap-5">
+            {passportLoading ? (
+              <StateMessage kind="loading" />
+            ) : passportError ? (
+              <StateMessage kind="error" onRetry={loadPassport} />
+            ) : (
+              <form onSubmit={handleSavePassport} className="flex flex-col gap-5">
               <h2 className="text-lg font-bold text-[var(--ink)]">
                 {t('passport_ui.needs_heading')}
               </h2>
@@ -368,7 +393,8 @@ export function Passport() {
                   <span>{saving ? t('passport_ui.saving') : t('passport_ui.save_btn')}</span>
                 </ActionButton>
               </div>
-            </form>
+              </form>
+            )}
           </Card>
 
           <Card className="space-y-4">
@@ -376,12 +402,18 @@ export function Passport() {
               {t('passport_ui.contacts_heading')}
             </h2>
 
-            {contacts.length === 0 ? (
-              <StateMessage
-                kind="empty"
-                title={t('passport_ui.contacts_empty')}
-              />
+            {contactsLoading ? (
+              <StateMessage kind="loading" />
+            ) : contactsError ? (
+              <StateMessage kind="error" onRetry={loadContacts} />
             ) : (
+              <>
+                {contacts.length === 0 ? (
+                  <StateMessage
+                    kind="empty"
+                    title={t('passport_ui.contacts_empty')}
+                  />
+                ) : (
               <ul className="space-y-2">
                 {contacts.map((c) => (
                   <li
@@ -465,9 +497,11 @@ export function Passport() {
                 </ActionButton>
               </div>
             </form>
+              </>
+            )}
           </Card>
         </>
-      )}
+      ) : null}
 
       {toast && (
         <Toast
