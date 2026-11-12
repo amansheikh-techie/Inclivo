@@ -28,6 +28,7 @@ export function useDemoData(): boolean {
 }
 
 async function getAuthHeader(): Promise<Record<string, string>> {
+  if (!supabase) return {}
   try {
     const { data } = await supabase.auth.getSession()
     if (data.session?.access_token) {
