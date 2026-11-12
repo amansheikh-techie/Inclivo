@@ -29,8 +29,8 @@ def list_schemes(
             if row_type not in (type_lower, "all"):
                 continue
         if state_lower:
-            row_state = (row.get("state") or "").lower()
-            if row_state not in (state_lower, "india"):
+            row_state = (row.get("state") or "").lower().strip()
+            if row_state not in (state_lower, "india", "all india"):
                 continue
         if q_lower:
             haystack = " ".join(
