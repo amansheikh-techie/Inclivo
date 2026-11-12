@@ -249,7 +249,21 @@ export const api = {
       '/api/schemes/match',
       { method: 'POST', body: JSON.stringify(profile) },
       normalizedSchemesFallback
-        .filter((s) => !s.state || s.state === 'All India' || s.state === profile.state)
+        .filter((s) => {
+          const typeFilter = profile.disability_type?.trim().toLowerCase()
+          if (typeFilter) {
+            const rowType = (s.disability_type ?? '').trim().toLowerCase()
+            if (rowType !== typeFilter && rowType !== 'all') return false
+          }
+          const stateFilter = profile.state?.trim().toLowerCase()
+          if (stateFilter) {
+            const rowState = (s.state ?? '').trim().toLowerCase()
+            if (rowState !== stateFilter && rowState !== 'india' && rowState !== 'all india') {
+              return false
+            }
+          }
+          return true
+        })
         .map((s) => ({ scheme: s, reason: 'Matches your profile' }))
     ),
 
