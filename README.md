@@ -165,4 +165,4 @@ Full details: [`docs/BACKEND_PRD.md`](docs/BACKEND_PRD.md) and [`docs/FRONTEND_P
 - **Aman** – Backend, documentation
 
 ## Licence
-MIT License — see [`LICENSE`](LICENSE).
+- **License:** [MIT License](LICENSE) — Copyright (c) 2026 Aman Sheikh. Free for academic, personal, and commercial evaluation.
