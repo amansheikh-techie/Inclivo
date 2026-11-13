@@ -161,8 +161,11 @@ Full details: [`docs/BACKEND_PRD.md`](docs/BACKEND_PRD.md) and [`docs/FRONTEND_P
 - Partnerships with NGOs and local authorities.
 
 ## Team
-- **Sanjay** – Frontend
-- **Aman** – Backend, documentation
+
+| Avatar | Member | Role | GitHub |
+|:---:|:---|:---|:---|
+| <img src="https://github.com/amansheikh-techie.png" width="64" height="64" alt="sk.Aman" style="border-radius: 50%;" /> | **sk.Aman** | Backend, AI Services & Documentation | [@amansheikh-techie](https://github.com/amansheikh-techie) |
+| <img src="https://github.com/identicons/sanjay.png" width="64" height="64" alt="Sanjay" style="border-radius: 50%;" /> | **Sanjay** | Frontend & UX Architecture | [Sanjay](https://github.com) |
 
 ## Licence
 This project is licensed under the MIT License. See the [`LICENSE`](LICENSE) file for details.
