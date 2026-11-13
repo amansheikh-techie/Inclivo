@@ -1,8 +1,11 @@
 import asyncio
 import json
+import logging
 from google import genai
 from google.genai import types
 from app.config import get_settings
+
+logger = logging.getLogger(__name__)
 
 GEMINI_TIMEOUT_SEC = 15.0
 FALLBACK_MESSAGE = (
@@ -68,6 +71,7 @@ async def _generate(contents, system_instruction: str | None = None) -> str | No
         text = await asyncio.wait_for(asyncio.to_thread(_call), timeout=GEMINI_TIMEOUT_SEC)
         return text or None
     except Exception:
+        logger.exception("Gemini _generate failed")
         return None
 
 
