@@ -48,4 +48,5 @@ Inclivo is a unified, accessible-by-design, AI-powered platform bringing these t
 - **GitHub:** https://github.com/amansheikh-techie/Inclivo
 - **Live Demo:** https://inclivo.vercel.app
 - **Backend API:** https://inclivo-backend.onrender.com (Docs: https://inclivo-backend.onrender.com/docs)
-- **Demo Video:** <TODO: Add demo video link>
+- **Demo Video:** https://drive.google.com/file/d/1ZawvPz5Ohu_GyG_A3_ubkHBRCfxI8aEG/view?usp=drive_link
+
