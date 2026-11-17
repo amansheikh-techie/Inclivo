@@ -9,7 +9,7 @@
 ## 1. Backend API Tests
 
 | ID | Feature | Test Steps | Expected Result | Actual Result | Status |
-|---|---|---|---|---|:---:|
+| --- | --- | --- | --- | --- | :---: |
 | B1 | Places | `GET /api/places` | Returns a list of places, each with an accessibility score and score breakdown | Returns 200 with 12 Hyderabad accessible places, distance_km, and scores | ✅ Pass |
 | B2 | Washrooms | `GET /api/washrooms` | Returns accessible washrooms with cleanliness ratings | Returns 200 with 8 washrooms with cleanliness ratings, verification badges, and distance | ✅ Pass |
 | B3 | Schemes list | `GET /api/schemes` | Returns government schemes with eligibility and apply link | Returns 200 with 10 central/state schemes with official portal URLs | ✅ Pass |
@@ -29,7 +29,7 @@
 ## 2. Frontend / Feature Tests
 
 | ID | Feature | Test Steps | Expected Result | Actual Result | Status |
-|---|---|---|---|---|:---:|
+| --- | --- | --- | --- | --- | :---: |
 | F1 | Place Finder | Open `/places` map page | Map loads with place markers, distance, and accessibility scores | OpenStreetMap loads 12 Hyderabad markers with 0–100 score badges and routing links | ✅ Pass |
 | F2 | Washroom Finder | Open `/washrooms` page | Accessible washrooms listed with cleanliness rating and verification | Lists 8 washrooms with cleanliness ratings, verification badges, and distance sorting | ✅ Pass |
 | F3 | Blind Assistant (voice) | Click mic, speak a question | Speech is recognised and the answer is read aloud | Recognizes speech via Web Speech API, generates response, and speaks via TTS | ✅ Pass |
@@ -46,7 +46,7 @@
 ## 3. Accessibility Tests
 
 | ID | Test | Expected Result | Actual Result | Status |
-|---|---|---|---|:---:|
+| --- | --- | --- | --- | :---: |
 | A1 | Navigate whole app using only keyboard (Tab / Enter / Space) | All features reachable, focus visible, skip link works | Skip-to-content anchor functions, visible focus rings on all interactive elements | ✅ Pass |
 | A2 | Use a screen reader on main pages | Buttons and images have readable labels | Semantic `<header>`, `<main>`, `<footer>` landmarks, `aria-label`, and `aria-live` regions pass | ✅ Pass |
 | A3 | Check status indicators | Status is never shown by colour alone | Badges use explicit text labels and Lucide icons alongside colors | ✅ Pass |
@@ -56,7 +56,7 @@
 ## 4. Reliability / Edge Cases
 
 | ID | Test | Expected Result | Actual Result | Status |
-|---|---|---|---|:---:|
+| --- | --- | --- | --- | :---: |
 | R1 | Microphone permission denied | App shows a friendly message, does not crash | Error state caught and user-friendly permission prompt shown | ✅ Pass |
 | R2 | Unsupported browser for speech recognition | App warns the user to use Chrome or Edge | Fallback banner advises user to switch to a Chromium-based browser | ✅ Pass |
 | R3 | Backend is offline / cold start | Frontend shows offline fallback data, no blank screen | Pre-bundled mock JSON files load automatically with "Demo Data" banner | ✅ Pass |
@@ -66,6 +66,7 @@
 ---
 
 ## 📊 Summary
+
 - **Total tests:** 31
 - **Passed:** 31
 - **Failed:** 0
