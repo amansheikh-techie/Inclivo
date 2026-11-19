@@ -72,11 +72,33 @@ One platform, many tools: accessible by design, multilingual, and AI-powered.
 ---
 
 ## 📁 Project Structure
-```text
-Inclivo/
-  frontend/   React app (Vite, Tailwind, Leaflet, i18n, Web Speech)
-  backend/    FastAPI app, seed data, schema, Gemini services
-  docs/       PRDs and architecture documentation
+
+```mermaid
+flowchart TD
+    root["📦 Inclivo/"]
+
+    root --> frontend["💻 frontend/ (React 19 + Vite)"]
+    root --> backend["⚙️ backend/ (FastAPI + Python 3.11)"]
+    root --> docs["📄 docs/ (Specs & PRDs)"]
+
+    frontend --> fe_src["src/"]
+    fe_src --> fe_pages["pages/ <br>• Places & Washrooms <br>• Assistant & Captions <br>• Schemes, Report, Passport"]
+    fe_src --> fe_comp["components/ <br>• MapView (Leaflet OSM) <br>• SOSButton & SensoryDrawer <br>• TopBar, Sidebar, BottomNav"]
+    fe_src --> fe_hooks["hooks/ <br>• useGeolocation <br>• useSensoryMode <br>• useSpeechRecognition"]
+    fe_src --> fe_i18n["i18n/ <br>• en, hi, te, ta"]
+    fe_src --> fe_lib["lib/ <br>• api.ts (REST client) <br>• supabase.ts"]
+    fe_src --> fe_mocks["mocks/ <br>• Offline JSON Fallbacks"]
+
+    backend --> be_app["app/"]
+    be_app --> be_routers["routers/ <br>• places, washrooms <br>• schemes, assistant <br>• reports, passport, sos"]
+    be_app --> be_services["services/ <br>• gemini.py (AI & Vision) <br>• scoring.py (Access score) <br>• schemes.py, reports.py"]
+    be_app --> be_core["core/ <br>• auth.py, uploads.py <br>• supabase.py, limiter.py"]
+    be_app --> be_schemas["schemas/ <br>• Pydantic models"]
+
+    backend --> be_data["data/ <br>• Hyderabad seed JSONs"]
+    backend --> be_sql["schema.sql <br>• Supabase schema & RLS"]
+
+    docs --> docs_prds["• FRONTEND_PRD.md <br>• BACKEND_PRD.md <br>• TEST_CASES.md <br>• TEAM_CONTRIBUTIONS.md"]
 ```
 
 ---
