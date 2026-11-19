@@ -10,16 +10,18 @@ Inclivo is a unified, AI-powered accessibility companion built to help people wi
 
 > ⚡ **Built from scratch in a 48-hour hackathon by a team of 2.**
 
-**Live demo:** https://inclivo.vercel.app | **Demo video:**  https://drive.google.com/file/d/1ZawvPz5Ohu_GyG_A3_ubkHBRCfxI8aEG/view?usp=drive_link
+**Live demo:** [https://inclivo.vercel.app](https://inclivo.vercel.app) | **Demo video:** [Google Drive Demo Video](https://drive.google.com/file/d/1ZawvPz5Ohu_GyG_A3_ubkHBRCfxI8aEG/view?usp=drive_link)
 
 ---
 
 ## ❓ Problem
+
 - People with disabilities struggle to find reliable accessibility information (ramps, washrooms, parking).
 - Blind and deaf users lack simple, affordable assistive tools in local languages.
 - Government schemes are hard to find and understand.
 
 ## 💡 Solution
+
 One platform, many tools: accessible by design, multilingual, and AI-powered.
 
 ---
@@ -27,6 +29,7 @@ One platform, many tools: accessible by design, multilingual, and AI-powered.
 ## 🚀 Features
 
 ### Core (6)
+
 - **Accessible Place Finder (`/places`):** Map of wheelchair-friendly places with ramps, elevators, accessible parking, and a transparent accessibility score (0–100).
 - **Accessible Washroom Finder (`/washrooms`):** Accessible washrooms with cleanliness ratings, verification badges, and distance sorting.
 - **AI Assistant for Blind Users (`/assistant`):** Voice input, image description (`/describe-image`), OCR text reader (`/ocr`), and voice navigation commands.
@@ -35,6 +38,7 @@ One platform, many tools: accessible by design, multilingual, and AI-powered.
 - **Government Schemes Finder (`/schemes`):** Directory of welfare schemes, eligibility checker (`/match`), plain-language AI explanations (`/simplify`), and official apply links.
 
 ### Additional
+
 - **Community Reporting (`/report`):** Report broken ramps and inaccessible facilities with photo upload and 1-vote-per-user upvoting.
 - **Accessibility Passport (`/passport`):** Passwordless email OTP sign-in, saved mobility/sensory preferences, and emergency contacts manager.
 - **Emergency Assistance (SOS):** Floating 2-second hold button with a 5-second cancellation grace window; shares live Google Maps location with saved contacts via WhatsApp and SMS.
@@ -42,8 +46,9 @@ One platform, many tools: accessible by design, multilingual, and AI-powered.
 - **Offline Fallback Data:** Pre-bundled mock datasets keep places, washrooms, schemes, and reports functional even when the backend is unreachable.
 
 ### Implementation Status
+
 | Feature | Status | Endpoint / Layer |
-|---|---|---|
+| --- | --- | --- |
 | Place Finder | Implemented | `GET /api/places`, `GET /api/places/{id}` |
 | Washroom Finder | Implemented | `GET /api/washrooms` |
 | Blind Assistant | Implemented | `POST /api/assistant/chat`, `/describe-image`, `/ocr` + Web Speech |
@@ -58,8 +63,9 @@ One platform, many tools: accessible by design, multilingual, and AI-powered.
 ---
 
 ## 🛠️ Tech Stack
+
 | Layer | Technology |
-|---|---|
+| --- | --- |
 | **Frontend** | React 19, Vite, TypeScript, Tailwind CSS v4, Lucide React |
 | **Backend** | Python 3.11+, FastAPI, Uvicorn, SlowAPI rate limiter |
 | **Database / Auth / Storage** | Supabase (PostgreSQL, Row Level Security, Storage, OTP Auth) |
@@ -106,17 +112,20 @@ flowchart TD
 ## 🏁 Getting Started
 
 ### Prerequisites
+
 - Node.js 20+ and Python 3.11+
 - A Supabase project and a Google AI Studio Gemini API key
 - Google Chrome or Microsoft Edge (recommended for Web Speech API)
 
 ### 1. Clone
+
 ```bash
 git clone https://github.com/amansheikh-techie/Inclivo.git
 cd Inclivo
 ```
 
 ### 2. Backend Setup
+
 ```bash
 cd backend
 python -m venv .venv
@@ -130,6 +139,7 @@ cp .env.example .env
 ```
 
 Set the values in `backend/.env`:
+
 ```ini
 SUPABASE_URL=https://<your-project-ref>.supabase.co
 SUPABASE_SERVICE_KEY=<your-supabase-service-role-key>
@@ -139,19 +149,24 @@ CLIENT_ORIGINS=http://localhost:5173
 ```
 
 Execute schema and seed initial Hyderabad data:
+
 1. Run `backend/schema.sql` inside your **Supabase SQL Editor**.
 2. Seed initial places, washrooms, and schemes:
+
 ```bash
 python -m scripts.seed
 ```
 
 Start the FastAPI backend:
+
 ```bash
 uvicorn app.main:app --reload --port 8000
 ```
+
 API docs: `http://localhost:8000/docs`
 
 ### 3. Frontend Setup
+
 ```bash
 cd ../frontend
 npm install
@@ -159,6 +174,7 @@ cp .env.example .env
 ```
 
 Set the values in `frontend/.env`:
+
 ```ini
 VITE_API_URL=http://localhost:8000
 VITE_SUPABASE_URL=https://<your-project-ref>.supabase.co
@@ -166,16 +182,19 @@ VITE_SUPABASE_ANON_KEY=<your-supabase-anon-key>
 ```
 
 Start the frontend:
+
 ```bash
 npm run dev
 ```
+
 Open `http://localhost:5173` in your browser.
 
 ---
 
 ## 🔌 API Overview
+
 | Method | Endpoint | Purpose |
-|---|---|---|
+| --- | --- | --- |
 | `GET` | `/api/places` | Accessible places with accessibility score |
 | `GET` | `/api/places/{place_id}` | Place details by ID |
 | `GET` | `/api/washrooms` | Accessible washrooms |
@@ -200,6 +219,7 @@ Full details: [`docs/BACKEND_PRD.md`](docs/BACKEND_PRD.md) and [`docs/FRONTEND_P
 ---
 
 ## ♿ Accessibility Commitments
+
 - WCAG 2.1 AA target, keyboard navigation, screen-reader support.
 - Status and alerts are never conveyed by colour alone.
 - High-contrast, large-text (125%), and reduced-motion support.
@@ -208,6 +228,7 @@ Full details: [`docs/BACKEND_PRD.md`](docs/BACKEND_PRD.md) and [`docs/FRONTEND_P
 ---
 
 ## 🔒 Privacy
+
 - Assistant images and audio are processed in memory and never permanently stored.
 - SOS location is logged only when the user deliberately triggers SOS.
 - Third-party API keys remain strictly on the backend.
@@ -215,12 +236,14 @@ Full details: [`docs/BACKEND_PRD.md`](docs/BACKEND_PRD.md) and [`docs/FRONTEND_P
 ---
 
 ## 👏 Credits & Inspiration
+
 - Ideas only (no code copied) from public projects: AccessiPath, WC Finder, VisionMate, Caption.Ninja.
 - Map data © OpenStreetMap contributors.
 
 ---
 
 ## ⚠️ Limitations
+
 - Demo data covers selected Hyderabad locations only.
 - Scheme information must be verified on official government websites.
 - Live captions depend on browser speech recognition support and microphone accuracy.
@@ -229,6 +252,7 @@ Full details: [`docs/BACKEND_PRD.md`](docs/BACKEND_PRD.md) and [`docs/FRONTEND_P
 ---
 
 ## 🗺️ Roadmap
+
 - [ ] Crowd-verified accessibility ratings and photo submissions.
 - [ ] Indoor navigation for large transit hubs and venues.
 - [ ] Additional Indian languages (Kannada, Marathi, Bengali).
@@ -239,11 +263,12 @@ Full details: [`docs/BACKEND_PRD.md`](docs/BACKEND_PRD.md) and [`docs/FRONTEND_P
 ## 👥 Team
 
 | Avatar | Member | Role | GitHub |
-|:---:|:---|:---|:---|
+| :---: | :--- | :--- | :--- |
 | <img src="https://github.com/amansheikh-techie.png" width="64" height="64" alt="sk.Aman" style="border-radius: 50%;" /> | **sk.Aman** | Backend, AI Services & Documentation | [@amansheikh-techie](https://github.com/amansheikh-techie) |
 | <img src="https://github.com/sanjaymudhiraj45-lab.png" width="64" height="64" alt="Sanjay" style="border-radius: 50%;" /> | **Sanjay** | Frontend & UX Architecture | [@sanjaymudhiraj45-lab](https://github.com/sanjaymudhiraj45-lab) |
 
 ---
 
 ## 📄 Licence
+
 This project is licensed under the MIT License. See the [`LICENSE`](LICENSE) file for details.
