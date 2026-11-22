@@ -83,17 +83,22 @@ export function SensoryDrawer({
                 onClick={() => toggleMode(mode)}
                 aria-pressed={active}
                 data-accent-fill={active ? 'true' : undefined}
-                className={`flex min-h-[44px] w-full cursor-pointer items-center justify-between rounded-xl border px-4 py-2.5 text-sm font-semibold transition-colors ${
+                className={`flex min-h-[44px] w-full cursor-pointer items-center justify-between rounded-xl border px-4 py-2.5 text-sm font-semibold transition-all duration-150 ${
                   active
-                    ? 'border-[var(--primary)] bg-[var(--accent)] text-[var(--accent-ink)]'
+                    ? 'border-[var(--primary)] bg-[var(--accent)] text-[var(--accent-ink)] font-bold shadow-md ring-2 ring-[var(--action)] ring-offset-2 ring-offset-[var(--surface)] scale-[1.01]'
                     : 'border-[var(--border)] bg-[var(--surface)] text-[var(--ink)] hover:bg-[var(--surface-muted)]'
                 }`}
               >
                 <span className="flex items-center gap-2.5">
-                  <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  <Icon
+                    className={`h-4 w-4 shrink-0 ${
+                      active ? 'text-[var(--accent-ink)]' : 'text-[var(--accent-text)]'
+                    }`}
+                    aria-hidden="true"
+                  />
                   <span>{label}</span>
                 </span>
-                {active && <Check className="h-4 w-4 shrink-0" aria-hidden="true" />}
+                {active && <Check className="h-4 w-4 shrink-0 stroke-[2.5]" aria-hidden="true" />}
               </button>
             )
           })}
