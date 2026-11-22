@@ -392,7 +392,13 @@ export function Passport() {
                     </select>
                   </div>
 
-                  <label className="min-h-[44px] px-3.5 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] flex items-center gap-2.5 text-sm font-semibold text-[var(--ink)] cursor-pointer">
+                  <label
+                    className={`min-h-[44px] px-3.5 py-2 rounded-xl border flex items-center gap-2.5 text-sm font-semibold cursor-pointer transition-all duration-150 ${
+                      passport.sensory_mode
+                        ? 'border-[var(--primary)] bg-[var(--accent)] text-[var(--accent-ink)] font-bold shadow-sm ring-2 ring-[var(--action)]'
+                        : 'border-[var(--border)] bg-[var(--surface-muted)] text-[var(--ink)]'
+                    }`}
+                  >
                     <input
                       type="checkbox"
                       checked={passport.sensory_mode}
