@@ -14,9 +14,10 @@ import { Card, SecondaryButton } from './ui'
 interface SchemeCardProps {
   scheme: Scheme
   matchReason?: string
+  activeDisability?: string
 }
 
-export function SchemeCard({ scheme, matchReason }: SchemeCardProps) {
+export function SchemeCard({ scheme, matchReason, activeDisability }: SchemeCardProps) {
   const { t, i18n } = useTranslation()
   const [simplified, setSimplified] = useState<string | null>(null)
   const [simplifying, setSimplifying] = useState(false)
@@ -62,7 +63,14 @@ export function SchemeCard({ scheme, matchReason }: SchemeCardProps) {
                 </span>
               )}
               {scheme.disability_type && (
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[var(--surface-muted)] border border-[var(--border)] text-[var(--accent-text)]">
+                <span
+                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border transition-all duration-150 ${
+                    activeDisability &&
+                    scheme.disability_type.toLowerCase() === activeDisability.toLowerCase()
+                      ? 'bg-[var(--accent)] text-[var(--accent-ink)] border-[var(--primary)] font-bold shadow-sm ring-2 ring-[var(--action)] scale-[1.03]'
+                      : 'bg-[var(--surface-muted)] border-[var(--border)] text-[var(--accent-text)]'
+                  }`}
+                >
                   {scheme.disability_type}
                 </span>
               )}
