@@ -3,6 +3,7 @@ import {
   Accessibility,
   ArrowUpDown,
   Award,
+  Check,
   CircleParking,
   ExternalLink,
   MapPin,
@@ -16,9 +17,19 @@ import { Card } from './ui'
 
 interface PlaceCardProps {
   place: Place
+  activeFilters?: string[]
+  onToggleFeature?: (featureKey: string) => void
+  isSelected?: boolean
+  onSelect?: () => void
 }
 
-export function PlaceCard({ place }: PlaceCardProps) {
+export function PlaceCard({
+  place,
+  activeFilters,
+  onToggleFeature,
+  isSelected,
+  onSelect,
+}: PlaceCardProps) {
   const { t } = useTranslation()
 
   const features = [
@@ -53,7 +64,14 @@ export function PlaceCard({ place }: PlaceCardProps) {
   const osmUrl = `https://www.openstreetmap.org/directions?to=${place.lat},${place.lng}`
 
   return (
-    <Card className="flex flex-col justify-between gap-4">
+    <Card
+      className={`flex flex-col justify-between gap-4 transition-all duration-150 ${
+        isSelected
+          ? 'ring-2 ring-[var(--action)] border-[var(--action)] shadow-lg'
+          : 'hover:border-[var(--border-hover,var(--action))]'
+      } ${onSelect ? 'cursor-pointer' : ''}`}
+      onClick={onSelect}
+    >
       <div className="space-y-3">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
@@ -104,15 +122,40 @@ export function PlaceCard({ place }: PlaceCardProps) {
 
         {features.length > 0 && (
           <ul className="flex flex-wrap gap-1.5" aria-label={t('places.accessibility_score')}>
-            {features.map(({ key, label, icon: Icon }) => (
-              <li
-                key={key}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[var(--surface-muted)] border border-[var(--border)] text-xs font-medium text-[var(--ink)]"
-              >
-                <Icon className="w-3.5 h-3.5 shrink-0 text-[var(--accent-text)]" aria-hidden="true" />
-                <span>{label}</span>
-              </li>
-            ))}
+            {features.map(({ key, label, icon: Icon }) => {
+              const isHighlighted = Boolean(activeFilters?.includes(key))
+              return (
+                <li key={key}>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      if (onToggleFeature) {
+                        e.stopPropagation()
+                        onToggleFeature(key)
+                      }
+                    }}
+                    title={onToggleFeature ? `Toggle ${label}` : label}
+                    aria-pressed={isHighlighted}
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all duration-150 ${
+                      isHighlighted
+                        ? 'bg-[var(--accent)] text-[var(--accent-ink)] border border-[var(--primary)] shadow-sm ring-2 ring-[var(--action)] scale-[1.03]'
+                        : 'bg-[var(--surface-muted)] text-[var(--ink)] border border-[var(--border)] hover:border-[var(--accent)]'
+                    } ${onToggleFeature ? 'cursor-pointer' : 'cursor-default'}`}
+                  >
+                    <Icon
+                      className={`w-3.5 h-3.5 shrink-0 ${
+                        isHighlighted ? 'text-[var(--accent-ink)]' : 'text-[var(--accent-text)]'
+                      }`}
+                      aria-hidden="true"
+                    />
+                    <span>{label}</span>
+                    {isHighlighted && (
+                      <Check className="w-3 h-3 shrink-0 stroke-[2.5]" aria-hidden="true" />
+                    )}
+                  </button>
+                </li>
+              )
+            })}
           </ul>
         )}
 
