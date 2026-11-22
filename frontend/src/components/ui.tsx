@@ -5,12 +5,15 @@ import { AlertCircle, Check, Inbox, Info, List, Loader2, Map as MapIcon, Refresh
 export function Card({
   children,
   className = '',
+  onClick,
 }: {
   children: ReactNode
   className?: string
+  onClick?: () => void
 }) {
   return (
     <div
+      onClick={onClick}
       className={`rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 text-[var(--ink)] shadow-sm ${className}`}
     >
       {children}
@@ -66,15 +69,15 @@ export function FilterChip({
       onClick={onClick}
       aria-pressed={active}
       data-accent-fill={active ? 'true' : undefined}
-      className={`inline-flex min-h-[44px] cursor-pointer items-center gap-2 rounded-xl border px-3.5 py-2 text-sm font-semibold transition-colors ${
+      className={`inline-flex min-h-[44px] cursor-pointer items-center gap-2 rounded-xl border px-3.5 py-2 text-sm font-semibold transition-all duration-150 ${
         active
-          ? 'border-[var(--primary)] bg-[var(--accent)] text-[var(--accent-ink)]'
-          : 'border-[var(--border)] bg-[var(--surface)] text-[var(--ink)] hover:bg-[var(--surface-muted)]'
+          ? 'border-[var(--primary)] bg-[var(--accent)] text-[var(--accent-ink)] font-bold shadow-md ring-2 ring-[var(--action)] ring-offset-2 ring-offset-[var(--surface)] scale-[1.02]'
+          : 'border-[var(--border)] bg-[var(--surface)] text-[var(--ink)] hover:bg-[var(--surface-muted)] hover:border-[var(--ink-muted)]'
       }`}
     >
-      <span aria-hidden="true">{icon}</span>
+      <span aria-hidden="true" className={active ? 'text-[var(--accent-ink)]' : 'text-[var(--accent-text)]'}>{icon}</span>
       <span>{label}</span>
-      {active && <Check className="h-4 w-4 shrink-0" aria-hidden="true" />}
+      {active && <Check className="h-4 w-4 shrink-0 stroke-[2.5]" aria-hidden="true" />}
     </button>
   )
 }
