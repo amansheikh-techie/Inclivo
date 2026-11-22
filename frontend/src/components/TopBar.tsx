@@ -92,7 +92,11 @@ export function TopBar({ onOpenSensory, isSensoryOpen, activeModeCount }: TopBar
             onClick={onOpenSensory}
             aria-label={t('nav.sensory_settings')}
             aria-expanded={isSensoryOpen}
-            className="inline-flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] px-3 text-sm font-semibold text-[var(--ink)] hover:opacity-90"
+            className={`inline-flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center gap-2 rounded-xl border px-3 text-sm font-semibold transition-all duration-150 ${
+              activeModeCount > 0 || isSensoryOpen
+                ? 'border-[var(--primary)] bg-[var(--accent)] text-[var(--accent-ink)] font-bold shadow-sm ring-2 ring-[var(--action)]'
+                : 'border-[var(--border)] bg-[var(--surface-muted)] text-[var(--ink)] hover:opacity-90'
+            }`}
           >
             <SlidersHorizontal className="h-4 w-4 shrink-0" aria-hidden="true" />
             <span className="hidden md:inline">{t('nav.sensory_settings')}</span>
