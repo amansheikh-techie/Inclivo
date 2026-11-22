@@ -204,7 +204,11 @@ export function Washrooms() {
                   {t('finder.selected_location')}
                 </h2>
                 {selectedWashroom ? (
-                  <WashroomCard washroom={selectedWashroom} />
+                  <WashroomCard
+                    washroom={selectedWashroom}
+                    isVerifiedFilterActive={verifiedOnly}
+                    isSelected
+                  />
                 ) : (
                   <Card>
                     <p className="text-sm text-[var(--ink-muted)]">
@@ -225,7 +229,13 @@ export function Washrooms() {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filtered.map((w) => (
-                <WashroomCard key={w.id} washroom={w} />
+                <WashroomCard
+                  key={w.id}
+                  washroom={w}
+                  isVerifiedFilterActive={verifiedOnly}
+                  isSelected={w.id === selectedId}
+                  onSelect={() => setSelectedId(w.id)}
+                />
               ))}
             </div>
           </section>
