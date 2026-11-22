@@ -77,6 +77,22 @@ export function Places() {
   const hasActiveFilters =
     filterWheelchair || filterRamp || filterElevator || filterParking || filterQuiet
 
+  const activeFilters = [
+    filterWheelchair && 'wheelchair',
+    filterRamp && 'ramp',
+    filterElevator && 'elevator',
+    filterParking && 'parking',
+    filterQuiet && 'quiet',
+  ].filter(Boolean) as string[]
+
+  const toggleFeature = useCallback((featureKey: string) => {
+    if (featureKey === 'wheelchair') setFilterWheelchair((v) => !v)
+    else if (featureKey === 'ramp') setFilterRamp((v) => !v)
+    else if (featureKey === 'elevator') setFilterElevator((v) => !v)
+    else if (featureKey === 'parking') setFilterParking((v) => !v)
+    else if (featureKey === 'quiet') setFilterQuiet((v) => !v)
+  }, [])
+
   const clearFilters = () => {
     setFilterWheelchair(false)
     setFilterRamp(false)
@@ -224,7 +240,12 @@ export function Places() {
                   {t('finder.selected_location')}
                 </h2>
                 {selectedPlace ? (
-                  <PlaceCard place={selectedPlace} />
+                  <PlaceCard
+                    place={selectedPlace}
+                    activeFilters={activeFilters}
+                    onToggleFeature={toggleFeature}
+                    isSelected
+                  />
                 ) : (
                   <Card>
                     <p className="text-sm text-[var(--ink-muted)]">
@@ -245,7 +266,14 @@ export function Places() {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredPlaces.map((p) => (
-                <PlaceCard key={p.id} place={p} />
+                <PlaceCard
+                  key={p.id}
+                  place={p}
+                  activeFilters={activeFilters}
+                  onToggleFeature={toggleFeature}
+                  isSelected={p.id === selectedPlaceId}
+                  onSelect={() => setSelectedPlaceId(p.id)}
+                />
               ))}
             </div>
           </section>
