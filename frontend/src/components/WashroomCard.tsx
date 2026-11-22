@@ -13,14 +13,30 @@ import { Card } from './ui'
 
 interface WashroomCardProps {
   washroom: Washroom
+  isSelected?: boolean
+  onSelect?: () => void
+  isVerifiedFilterActive?: boolean
 }
 
-export function WashroomCard({ washroom }: WashroomCardProps) {
+export function WashroomCard({
+  washroom,
+  isSelected,
+  onSelect,
+  isVerifiedFilterActive,
+}: WashroomCardProps) {
   const { t } = useTranslation()
   const osmUrl = `https://www.openstreetmap.org/directions?to=${washroom.lat},${washroom.lng}`
+  const isVerifiedHighlighted = washroom.verified && isVerifiedFilterActive
 
   return (
-    <Card className="flex flex-col justify-between gap-4">
+    <Card
+      className={`flex flex-col justify-between gap-4 transition-all duration-150 ${
+        isSelected
+          ? 'ring-2 ring-[var(--action)] border-[var(--action)] shadow-lg'
+          : 'hover:border-[var(--border-hover,var(--action))]'
+      } ${onSelect ? 'cursor-pointer' : ''}`}
+      onClick={onSelect}
+    >
       <div className="space-y-3">
         <div className="flex items-start justify-between gap-3">
           <h3 className="text-lg font-bold text-[var(--ink)] leading-snug">
@@ -29,10 +45,12 @@ export function WashroomCard({ washroom }: WashroomCardProps) {
 
           <span
             data-accent-fill={washroom.verified ? 'true' : undefined}
-            className={`shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${
-              washroom.verified
-                ? 'bg-[var(--accent)] text-[var(--accent-ink)] border-transparent'
-                : 'bg-[var(--surface-muted)] text-[var(--ink)] border-[var(--border)]'
+            className={`shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border transition-all duration-150 ${
+              isVerifiedHighlighted
+                ? 'bg-[var(--accent)] text-[var(--accent-ink)] border-[var(--primary)] shadow-md ring-2 ring-[var(--action)] scale-[1.03]'
+                : washroom.verified
+                  ? 'bg-[var(--accent)] text-[var(--accent-ink)] border-transparent'
+                  : 'bg-[var(--surface-muted)] text-[var(--ink)] border-[var(--border)]'
             }`}
           >
             {washroom.verified ? (
