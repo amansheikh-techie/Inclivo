@@ -28,20 +28,18 @@ One platform, many tools: accessible by design, multilingual, and AI-powered.
 
 ## 🚀 Features
 
-### Core (6)
+### Six Core Tools
 
-- **Accessible Place Finder (`/places`):** Map of wheelchair-friendly places with ramps, elevators, accessible parking, and a transparent accessibility score (0–100).
-- **Accessible Washroom Finder (`/washrooms`):** Accessible washrooms with cleanliness ratings, verification badges, and distance sorting.
-- **AI Assistant for Blind Users (`/assistant`):** Voice input, image description (`/describe-image`), OCR text reader (`/ocr`), and voice navigation commands.
-- **Live Captions for Deaf Users (`/captions`):** Real-time speech-to-text in 4 languages with adjustable text size and `.txt` transcript download.
+1. **Accessible Place Finder (`/places`):** Map of wheelchair-friendly places with ramps, elevators, accessible parking, and a transparent accessibility score (0–100).
+2. **Accessible Washroom Finder (`/washrooms`):** Accessible washrooms with cleanliness ratings, verification badges, and distance sorting.
+3. **AI Assistant for Blind Users (`/assistant`):** Voice input, image description (`/describe-image`), OCR text reader (`/ocr`), and voice navigation commands.
+4. **Live Captions for Deaf Users (`/captions`):** Real-time speech-to-text in 4 languages with adjustable text size and `.txt` transcript download.
+5. **Government Schemes Finder (`/schemes`):** Directory of welfare schemes, eligibility checker (`/match`), plain-language AI explanations (`/simplify`), and official apply links.
+6. **SOS & Community Tools (`/report`, `/passport`, SOS):** Community barrier reporting with photo upload and 1-vote-per-user upvoting, Accessibility Passport with email OTP sign-in and saved emergency contacts, plus a floating 2-second hold SOS button with a 5-second cancel window that shares a live Google Maps link via WhatsApp and SMS.
+
+### Platform Capabilities
+
 - **Multilingual Support:** English, Hindi (हिन्दी), Telugu (తెలుగు), and Tamil (தமிழ்).
-- **Government Schemes Finder (`/schemes`):** Directory of welfare schemes, eligibility checker (`/match`), plain-language AI explanations (`/simplify`), and official apply links.
-
-### Additional
-
-- **Community Reporting (`/report`):** Report broken ramps and inaccessible facilities with photo upload and 1-vote-per-user upvoting.
-- **Accessibility Passport (`/passport`):** Passwordless email OTP sign-in, saved mobility/sensory preferences, and emergency contacts manager.
-- **Emergency Assistance (SOS):** Floating 2-second hold button with a 5-second cancellation grace window; shares live Google Maps location with saved contacts via WhatsApp and SMS.
 - **Sensory-Friendly Mode:** Instant toggling for High Contrast (black/yellow), Large Text (125%), Reduced Motion, Dyslexia-friendly font, and Dark mode.
 - **Offline Fallback Data:** Pre-bundled mock datasets keep places, washrooms, schemes, and reports functional even when the backend is unreachable.
 
@@ -74,6 +72,23 @@ One platform, many tools: accessible by design, multilingual, and AI-powered.
 | **Voice** | Web Speech API (`SpeechRecognition` & `SpeechSynthesis`) |
 | **i18n** | `i18next`, `react-i18next` |
 | **Hosting** | Vercel (frontend), Render (backend) |
+
+---
+
+## 🏗️ Architecture
+
+```mermaid
+flowchart LR
+    Browser["Browser (React 19 + Vite + Leaflet + Web Speech API)"]
+    FastAPI["FastAPI Backend (Python 3.11+ REST API)"]
+    Supabase["Supabase (PostgreSQL + RLS + OTP Auth + Storage)"]
+    Gemini["Google Gemini API (Chat, Vision, OCR, Simplify)"]
+
+    Browser -->|"HTTPS REST + Bearer JWT"| FastAPI
+    Browser -->|"OTP Auth Session"| Supabase
+    FastAPI -->|"SQL Queries + Photo Uploads"| Supabase
+    FastAPI -->|"AI Prompts + Images"| Gemini
+```
 
 ---
 
@@ -129,26 +144,23 @@ cd Inclivo
 ```bash
 cd backend
 python -m venv .venv
-# Windows:
-.venv\Scripts\activate
+# Windows (PowerShell):
+.venv\Scripts\Activate.ps1
+# Windows (CMD):
+.venv\Scripts\activate.bat
 # macOS/Linux:
 source .venv/bin/activate
 
 pip install -r requirements.txt
+# macOS/Linux:
 cp .env.example .env
+# Windows (PowerShell):
+Copy-Item .env.example .env
 ```
 
-Set the values in `backend/.env`:
+Fill in `backend/.env` using [`backend/.env.example`](backend/.env.example) (for example `GEMINI_MODEL=gemini-2.0-flash` and `CLIENT_ORIGINS=http://localhost:5173`).
 
-```ini
-SUPABASE_URL=https://<your-project-ref>.supabase.co
-SUPABASE_SERVICE_KEY=<your-supabase-service-role-key>
-GEMINI_API_KEY=<your-google-ai-studio-gemini-key>
-GEMINI_MODEL=gemini-3.8-flash
-CLIENT_ORIGINS=http://localhost:5173
-```
-
-Execute schema and seed initial Hyderabad data:
+Execute the schema and seed initial Hyderabad data:
 
 1. Run `backend/schema.sql` inside your **Supabase SQL Editor**.
 2. Seed initial places, washrooms, and schemes:
@@ -163,23 +175,22 @@ Start the FastAPI backend:
 uvicorn app.main:app --reload --port 8000
 ```
 
-API docs: `http://localhost:8000/docs`
+Health check: `http://localhost:8000/api/health` · API docs: `http://localhost:8000/docs`
 
 ### 3. Frontend Setup
 
+Open a second terminal from the repository root (`Inclivo/`):
+
 ```bash
-cd ../frontend
+cd frontend
 npm install
+# macOS/Linux:
 cp .env.example .env
+# Windows (PowerShell):
+Copy-Item .env.example .env
 ```
 
-Set the values in `frontend/.env`:
-
-```ini
-VITE_API_URL=http://localhost:8000
-VITE_SUPABASE_URL=https://<your-project-ref>.supabase.co
-VITE_SUPABASE_ANON_KEY=<your-supabase-anon-key>
-```
+Fill in `frontend/.env` using [`frontend/.env.example`](frontend/.env.example).
 
 Start the frontend:
 
@@ -189,12 +200,28 @@ npm run dev
 
 Open `http://localhost:5173` in your browser.
 
+### Environment Variables
+
+All variable names match [`backend/.env.example`](backend/.env.example) and [`frontend/.env.example`](frontend/.env.example). Never commit real `.env` files or secret keys.
+
+| Variable | File | Meaning |
+| --- | --- | --- |
+| `SUPABASE_URL` | `backend/.env` | Your Supabase project URL |
+| `SUPABASE_SERVICE_KEY` | `backend/.env` | Supabase service-role key for server-side database and storage access |
+| `GEMINI_API_KEY` | `backend/.env` | Google AI Studio API key for Gemini chat, vision, OCR, and simplification |
+| `GEMINI_MODEL` | `backend/.env` | Gemini model ID used by the backend (for example `gemini-2.0-flash`) |
+| `CLIENT_ORIGINS` | `backend/.env` | Comma-separated list of allowed frontend CORS origins (default `http://localhost:5173`) |
+| `VITE_API_URL` | `frontend/.env` | Base URL of the FastAPI backend (default `http://localhost:8000`) |
+| `VITE_SUPABASE_URL` | `frontend/.env` | Your Supabase project URL for browser OTP authentication |
+| `VITE_SUPABASE_ANON_KEY` | `frontend/.env` | Public Supabase anonymous key for browser OTP authentication |
+
 ---
 
 ## 🔌 API Overview
 
 | Method | Endpoint | Purpose |
 | --- | --- | --- |
+| `GET` | `/api/health` | Backend health check |
 | `GET` | `/api/places` | Accessible places with accessibility score |
 | `GET` | `/api/places/{place_id}` | Place details by ID |
 | `GET` | `/api/washrooms` | Accessible washrooms |
