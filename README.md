@@ -10,7 +10,7 @@ Inclivo is a unified, AI-powered accessibility companion built to help people wi
 
 > ⚡ **Built from scratch in a 48-hour hackathon by a team of 2.**
 
-**Live demo:** [https://inclivo.vercel.app](https://inclivo.vercel.app) | **Demo video:** [Google Drive Demo Video](https://drive.google.com/file/d/1ZawvPz5Ohu_GyG_A3_ubkHBRCfxI8aEG/view?usp=drive_link)
+**Live demo:** [inclivo.vercel.app](https://inclivo.vercel.app) | **Demo video:** [Google Drive Demo Video](https://drive.google.com/file/d/1ZawvPz5Ohu_GyG_A3_ubkHBRCfxI8aEG/view?usp=drive_link)
 
 ---
 
